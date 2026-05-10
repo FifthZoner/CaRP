@@ -1,102 +1,91 @@
 using CaRP.Backend;
 using CaRP.Components;
-using Clerk.Net.Client;
 using Clerk.Net.DependencyInjection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Kiota.Abstractions.Authentication;
-using Microsoft.Kiota.Http.HttpClientLibrary;
 using DbContext = Microsoft.EntityFrameworkCore.DbContext;
-using System.Net.Http.Headers;
-
-namespace CaRP;
 
 public class Program
 {
-    public static void Main(string[] args)
+
+public static void Main(string[] args)
+{
+    var builder = WebApplication.CreateBuilder(args);
+
+    builder.Services.AddRazorComponents()
+        .AddInteractiveWebAssemblyComponents();
+
+    // Configuration
+    var secretKey = builder.Configuration["Clerk:SecretKey"] ?? "";
+    var publishableKey = builder.Configuration["Clerk:PublishableKey"] ?? "";
+    var connString = builder.Configuration["Database:ConnString"] ?? "";
+
+    // Database
+    builder.Services.AddDbContext<DbContext>(options =>
+        options.UseNpgsql(connString));
+
+    // Clerk API Client (Using the official DI helper)
+    builder.Services.AddClerkApiClient(config =>
     {
-        var builder = WebApplication.CreateBuilder(args);
+        config.SecretKey = secretKey;
+    });
 
-        // Add services to the container.
-        builder.Services.AddRazorComponents()
-            .AddInteractiveWebAssemblyComponents();
-
-        Endpoints.Secrets.SecretKey = builder.Configuration["Clerk:SecretKey"] ?? "";
-        Endpoints.Secrets.PublishableKey = builder.Configuration["Clerk:PublishableKey"] ?? "";
-        Endpoints.Secrets.ConnString = builder.Configuration["Database:ConnString"] ?? "";
-
-
-        builder.Services.AddDbContext<DbContext>(options =>
-            options.UseNpgsql(Endpoints.Secrets.ConnString));
-
-        builder.Services.AddClerkApiClient(config =>
-        {
-            config.SecretKey = Endpoints.Secrets.SecretKey;
-        });
-
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options => {
-                options.Authority = "https://becoming-sole-26.clerk.accounts.dev";
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateAudience = false
-                };
-            });
-
-        builder.Services.AddAuthorization();
-
-        var authProvider = new ApiKeyAuthenticationProvider(
-            Endpoints.Secrets.SecretKey,
-            "Authorization",
-            ApiKeyAuthenticationProvider.KeyLocation.Header,
-            "Bearer");
-
-        var adapter = new HttpClientRequestAdapter(authProvider)
-        {
-            BaseUrl = "https://api.clerk.com/v1"
-        };
-
-        builder.Services.AddSingleton(new ClerkApiClient(adapter));
-
-        builder.Services.AddCors(options =>
-        {
-            options.AddDefaultPolicy(policy =>
+    // Authentication
+    builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        .AddJwtBearer(options => {
+            options.Authority = "https://becoming-sole-26.clerk.accounts.dev";
+            options.MetadataAddress = "https://becoming-sole-26.clerk.accounts.dev/.well-known/openid-configuration";
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                policy.WithOrigins("https://localhost:5249")
-                    .AllowAnyHeader()
-                    .AllowAnyMethod();
-            });
+                ValidateIssuer = true,
+                ValidIssuer = "https://becoming-sole-26.clerk.accounts.dev",
+                ValidateAudience = false,
+                ValidateLifetime = true
+            };
         });
 
-        var app = builder.Build();
+    builder.Services.AddAuthorization();
 
-        app.UseRouting();
-        app.UseCors(); // Must be placed between UseRouting and UseAuthorization
-        app.UseAuthorization();
-
-        Endpoints.MapEndpoints(app.MapGroup("/api"));
-
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-            app.UseWebAssemblyDebugging();
-        else
+    builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
         {
-            app.UseExceptionHandler("/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-            app.UseHsts();
-        }
+            // IMPORTANT: This must be the URL of your BLAZOR app
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+    });
 
-        app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-        app.UseHttpsRedirection();
+    var app = builder.Build();
 
-        app.UseAntiforgery();
-
-        app.MapStaticAssets();
-        app.MapRazorComponents<App>()
-            .AddInteractiveWebAssemblyRenderMode()
-            .AddAdditionalAssemblies(typeof(Client._Imports).Assembly);
-
-        app.Run();
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseWebAssemblyDebugging();
     }
+    else
+    {
+        app.UseExceptionHandler("/Error");
+        app.UseHsts();
+    }
+
+    app.UseHttpsRedirection();
+    app.MapStaticAssets();
+
+    app.UseRouting();
+    app.UseCors();
+
+    app.UseAuthentication(); // MUST be before Authorization
+    app.UseAuthorization();
+    app.UseAntiforgery();
+
+    Endpoints.MapEndpoints(app.MapGroup("/api"));
+
+    app.MapRazorComponents<App>()
+        .AddInteractiveWebAssemblyRenderMode()
+        .AddAdditionalAssemblies(typeof(CaRP.Client._Imports).Assembly);
+
+    app.Run();
+}
 }

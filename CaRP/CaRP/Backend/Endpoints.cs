@@ -11,7 +11,7 @@ public static partial class Endpoints
         // testing
         api.MapGet("/test", () => Results.Ok(new { Message = "Backend works!" }));
 
-         api.MapGet("/user/check_login", async () =>
+         api.MapGet("/user/check_login", () =>
          {
              int k = 10;
 

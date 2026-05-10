@@ -78,7 +78,7 @@ else
     {
         try
         {
-            var result = await Http.GetFromJsonAsync<MyDataModel>("api/user/check_login");
+            var result = await Http.GetFromJsonAsync<MyDataModel>("user/check_login");
             apiResponse = result?.Name;
         }
         catch (HttpRequestException ex)
@@ -89,5 +89,5 @@ else
         }
     }
 
-    public class MyDataModel { public string Name { get; set; } }
+    public class MyDataModel { public string? Name { get; set; } }
 }

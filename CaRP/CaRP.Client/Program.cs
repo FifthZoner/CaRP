@@ -12,14 +12,14 @@ class Program
         builder.Services.AddScoped<ClerkAuthorizationHandler>();
 
 // 2. Register an HttpClient that uses this handler
-        builder.Services.AddHttpClient("MyAPI", client =>
+        builder.Services.AddHttpClient("api", client =>
             {
-                client.BaseAddress = new Uri("http://localhost:5249");
+                client.BaseAddress = new Uri("http://localhost:5249/api/");
             })
             .AddHttpMessageHandler<ClerkAuthorizationHandler>();
 
 // 3. (Optional) Set the default HttpClient to use this handler
-        builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("MyAPI"));
+        builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("api"));
 
         await builder.Build().RunAsync();
     }

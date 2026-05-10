@@ -15,6 +15,9 @@ public class Program
 
         var app = builder.Build();
 
+        var api = app.MapGroup("/api");
+        api.MapGet("/hello", () => Results.Ok(new { Message = "Hello from the Backend!" }));
+
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {

@@ -1,0 +1,13 @@
+﻿services:
+  carp:
+    image: carp
+    build:
+      context: .
+      dockerfile: CaRP/CaRP/Dockerfile
+
+  carp.client:
+    image: carp.client
+    build:
+      context: .
+      dockerfile: CaRP/CaRP.Client/Dockerfile
+

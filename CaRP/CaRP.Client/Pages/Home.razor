@@ -1,0 +1,34 @@
+﻿@page "/"
+@rendermode InteractiveWebAssembly
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Home</PageTitle>
+
+<h1>Welcome to CaRP</h1>
+
+<button class="btn btn-primary" @onclick="HandleLogin">
+    Login with Clerk
+</button>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Ensure Clerk is loaded before we try to use it
+            await JSRuntime.InvokeVoidAsync("clerkInterop.init");
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("clerkInterop.openSignIn");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Auth Error: {ex.Message}");
+        }
+    }
+}

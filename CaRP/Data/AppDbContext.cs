@@ -48,11 +48,13 @@ public partial class AppDbContext : DbContext
                 .HasMaxLength(255)
                 .HasColumnName("mechanic_name");
             entity.Property(e => e.ServiceDate).HasColumnName("service_date");
+            entity.Property(e => e.ServiceNumber)
+                .HasMaxLength(255)
+                .HasColumnName("service_number");
             entity.Property(e => e.VehicleId).HasColumnName("vehicle_id");
 
             entity.HasOne(d => d.Vehicle).WithMany(p => p.Servicings)
                 .HasForeignKey(d => d.VehicleId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("servicing_vehicle_id_fkey");
         });
 
@@ -69,9 +71,7 @@ public partial class AppDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AvailableFrom).HasColumnName("available_from");
             entity.Property(e => e.AvailableTo).HasColumnName("available_to");
-            entity.Property(e => e.IsOwnedByCompany)
-                .HasDefaultValue(true)
-                .HasColumnName("is_owned_by_company");
+            entity.Property(e => e.IsOwnedByCompany).HasColumnName("is_owned_by_company");
             entity.Property(e => e.RegistrationNumber)
                 .HasMaxLength(20)
                 .HasColumnName("registration_number");
@@ -105,7 +105,6 @@ public partial class AppDbContext : DbContext
 
             entity.HasOne(d => d.Vehicle).WithMany(p => p.WorkRegistrations)
                 .HasForeignKey(d => d.VehicleId)
-                .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("work_registrations_vehicle_id_fkey");
         });
 

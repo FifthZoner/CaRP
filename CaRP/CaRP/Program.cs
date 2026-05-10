@@ -59,8 +59,21 @@ public class Program
 
         builder.Services.AddSingleton(new ClerkApiClient(adapter));
 
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy =>
+            {
+                policy.WithOrigins("https://localhost:5249")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+            });
+        });
 
         var app = builder.Build();
+
+        app.UseRouting();
+        app.UseCors(); // Must be placed between UseRouting and UseAuthorization
+        app.UseAuthorization();
 
         Endpoints.MapEndpoints(app.MapGroup("/api"));
 

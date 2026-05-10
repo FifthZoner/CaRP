@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using CaRP.Shared.Dtos;
 using Clerk.Net.Client;
 using Clerk.Net.Client.Organizations.Item.Invitations;
@@ -32,7 +33,7 @@ public static partial class Endpoints
 
 
 
-    public static async void Login(LoginDto data)
+    public static async void Login(ClaimsPrincipal user)
     {
 
     }

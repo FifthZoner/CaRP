@@ -13,10 +13,13 @@ window.clerkInterop = {
         Clerk.openSignIn();
     },
 
-    getAccessToken: async () => {
-        // This token is what you send to your .NET API
-        return await Clerk.session?.getToken();
-    },
+    getAccessToken: async function () {
+            if (!window.Clerk || !window.Clerk.session) {
+                return null;
+            }
+            // This retrieves the short-lived JWT (session token)
+            return await window.Clerk.session.getToken();
+        },
 
     logout: async () => {
         await Clerk.signOut();

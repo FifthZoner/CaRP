@@ -13,28 +13,10 @@ public static partial class Endpoints
         // testing
         api.MapGet("/test", () => Results.Ok(new { Message = "Backend works!" }));
 
-        api.MapGet("/user/login_details", async (ClaimsPrincipal user) =>
-        {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        api.MapGet("/user/login_details", LoginDetails()).RequireAuthorization();
 
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Secrets.SecretKey);
+        api.MapGet("/vehicles/get_all", VehiclesGetAll()).RequireAuthorization();
 
-            var clerkUser = await client.GetFromJsonAsync<ClerkUserResponse>($"https://api.clerk.com/v1/users/{userId}");
-
-            if (clerkUser == null)
-                return Results.InternalServerError("Could not find clerk user");
-
-            var role = user.FindFirst("role_enum_value")?.Value;
-            if (!int.TryParse(role, out var roleLevel))
-                return Results.InternalServerError("Could not get user role level");
-
-            return Results.Ok(new LoginInfoDto() {
-                Username = user.FindFirst("login")?.Value ?? "",
-                ImageUrl = clerkUser.ImageUrl ?? null,
-                RoleLevel = (RoleEnum)roleLevel
-            });
-        }).RequireAuthorization();
     }
 
 

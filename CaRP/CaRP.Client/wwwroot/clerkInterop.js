@@ -18,7 +18,7 @@ window.clerkInterop = {
                 return null;
             }
             // This retrieves the short-lived JWT (session token)
-            return await window.Clerk.session.getToken();
+            return await window.Clerk.session.getToken({ template: "rolelevel" });
         },
 
     logout: async () => {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CaRP.Shared.Models;
 
-public partial class Vehicle
+public class Vehicle
 {
     public int Id { get; set; }
 

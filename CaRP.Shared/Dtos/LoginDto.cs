@@ -1,7 +1,10 @@
+using carp.Shared.Enums;
+
 namespace CaRP.Shared.Dtos;
 
-public class LoginDto
+public class LoginInfoDto
 {
-    public string Username { get; set; } = string.Empty;
-    public string Password { get; set; } = string.Empty;
+    public required string Username { get; set; }
+    public string? ImageUrl { get; set; }
+    public required RoleEnum RoleLevel { get; set; }
 }

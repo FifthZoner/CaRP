@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace CaRP.Shared.Models;
 
-public partial class WorkRegistration
+public class WorkRegistration
 {
     public int Id { get; set; }
 

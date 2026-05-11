@@ -17,9 +17,9 @@ public static void Main(string[] args)
         .AddInteractiveWebAssemblyComponents();
 
     // Configuration
-    var secretKey = builder.Configuration["Clerk:SecretKey"] ?? "";
-    var publishableKey = builder.Configuration["Clerk:PublishableKey"] ?? "";
-    var connString = builder.Configuration["Database:ConnString"] ?? "";
+    var secretKey = Endpoints.Secrets.SecretKey = builder.Configuration["Clerk:SecretKey"] ?? "";
+    var publishableKey = Endpoints.Secrets.PublishableKey = builder.Configuration["Clerk:PublishableKey"] ?? "";
+    var connString = Endpoints.Secrets.ConnString = builder.Configuration["Database:ConnString"] ?? "";
 
     // Database
     builder.Services.AddDbContext<DbContext>(options =>
@@ -47,14 +47,12 @@ public static void Main(string[] args)
 
     builder.Services.AddAuthorization();
 
-    builder.Services.AddCors(options =>
-    {
-        options.AddDefaultPolicy(policy =>
-        {
-            // IMPORTANT: This must be the URL of your BLAZOR app
-            policy.AllowAnyOrigin()
-                  .AllowAnyHeader()
-                  .AllowAnyMethod();
+    builder.Services.AddCors(options => {
+        options.AddPolicy("AllowBlazor", policy => {
+            policy.WithOrigins("https://localhost:5249") // Your Blazor Port
+                .AllowAnyMethod()
+                .AllowAnyHeader() // CRITICAL: This allows the 'Authorization' header
+                .AllowCredentials();
         });
     });
 
@@ -74,7 +72,7 @@ public static void Main(string[] args)
     app.MapStaticAssets();
 
     app.UseRouting();
-    app.UseCors();
+    app.UseCors("AllowBlazor");
 
     app.UseAuthentication(); // MUST be before Authorization
     app.UseAuthorization();

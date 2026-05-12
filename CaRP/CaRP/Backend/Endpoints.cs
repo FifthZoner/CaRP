@@ -20,6 +20,12 @@ public static partial class Endpoints
         api.MapPost("/vehicles/add", VehiclesAdd()).RequireAuthorization();
         api.MapPost("/vehicles/edit", VehiclesEdit()).RequireAuthorization();
         api.MapPost("/vehicles/delete", VehiclesDelete()).RequireAuthorization();
+
+        api.MapGet("/work/get_all", WorkGetAll()).RequireAuthorization();
+        api.MapPost("/work/get_detail", WorkGetDetail()).RequireAuthorization();
+        api.MapPost("/work/add", WorkAdd()).RequireAuthorization();
+        api.MapPost("/work/edit", WorkEdit()).RequireAuthorization();
+        api.MapPost("/work/delete", WorkDelete).RequireAuthorization();
     }
 
 

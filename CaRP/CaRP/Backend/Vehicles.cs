@@ -11,95 +11,80 @@ namespace CaRP.Backend;
 
 public partial class Endpoints
 {
-    private static Func<ClaimsPrincipal, CaRpDbContext, Task<IResult>> VehiclesGetAll()
+    private static async Task<IResult> VehiclesGetAll(ClaimsPrincipal user, [FromServices] CaRpDbContext db)
     {
-        return async (ClaimsPrincipal user, [FromServices] CaRpDbContext db) =>
-        {
-            if (user.IsNotAtLeast(RoleEnum.Driver))
-                return Results.Unauthorized();
+        if (user.IsNotAtLeast(RoleEnum.Driver))
+            return Results.Unauthorized();
 
-            var vehicles = await db.Vehicles.ToListAsync();
-            return Results.Ok(vehicles);
-        };
+        var vehicles = await db.Vehicles.ToListAsync();
+        return Results.Ok(vehicles);
     }
 
-    private static Func<ClaimsPrincipal, CaRpDbContext, GetDetailDto, IMapper, Task<IResult>> VehiclesGetDetail()
+    private static async Task<IResult> VehiclesGetDetail(ClaimsPrincipal user, [FromServices] CaRpDbContext db, GetDetailDto getDetailDto, [FromServices] IMapper mapper)
     {
-        return async (ClaimsPrincipal user, [FromServices] CaRpDbContext db, GetDetailDto getDetailDto, [FromServices] IMapper mapper) =>
-        {
-            if (user.IsNotAtLeast(RoleEnum.Manager))
-                return Results.Unauthorized();
+        if (user.IsNotAtLeast(RoleEnum.Manager))
+            return Results.Unauthorized();
 
-            var vehicle = await db.Vehicles.FindAsync(getDetailDto.Id);
+        var vehicle = await db.Vehicles.FindAsync(getDetailDto.Id);
 
-            if (vehicle == null)
-                return Results.NotFound();
+        if (vehicle == null)
+            return Results.NotFound();
 
-            return Results.Ok(mapper.Map<VehicleDto>(vehicle));
-        };
+        return Results.Ok(mapper.Map<VehicleDto>(vehicle));
     }
 
-    private static Func<ClaimsPrincipal, CaRpDbContext, VehicleDto, IMapper, Task<IResult>> VehiclesAdd()
+    private static async Task<IResult> VehiclesAdd(ClaimsPrincipal user, [FromServices] CaRpDbContext db, VehicleDto dto, [FromServices] IMapper mapper)
     {
-        return async (ClaimsPrincipal user, [FromServices] CaRpDbContext db, VehicleDto dto, [FromServices] IMapper mapper) =>
-        {
-            if (user.IsNotAtLeast(RoleEnum.Manager))
-                return Results.Unauthorized();
+        if (user.IsNotAtLeast(RoleEnum.Manager))
+            return Results.Unauthorized();
 
-            var vehicle = mapper.Map<Vehicle>(dto);
+        var vehicle = mapper.Map<Vehicle>(dto);
 
-            if (vehicle == null)
-                return Results.BadRequest();
+        if (vehicle == null)
+            return Results.BadRequest();
 
-            vehicle.Id = 0;
+        vehicle.Id = 0;
 
-            // TODO: sprawdzenia
+        // TODO: sprawdzenia
 
-            db.Vehicles.Add(vehicle);
-            await db.SaveChangesAsync();
+        db.Vehicles.Add(vehicle);
+        await db.SaveChangesAsync();
 
-            return Results.Ok(new { Message = "Added", Id = vehicle.Id });
-        };
+        return Results.Ok(new { Message = "Added", Id = vehicle.Id });
     }
 
-    private static Func<ClaimsPrincipal, CaRpDbContext, VehicleDto, IMapper, Task<IResult>> VehiclesEdit()
+    private static async Task<IResult> VehiclesEdit(ClaimsPrincipal user, [FromServices] CaRpDbContext db, VehicleDto dto, [FromServices] IMapper mapper)
     {
-        return async (ClaimsPrincipal user, [FromServices] CaRpDbContext db, VehicleDto dto, [FromServices] IMapper mapper) =>
-        {
-            if (user.IsNotAtLeast(RoleEnum.Manager))
-                return Results.Unauthorized();
+        if (user.IsNotAtLeast(RoleEnum.Manager))
+            return Results.Unauthorized();
 
-            var vehicle = await db.Vehicles.FindAsync(dto.Id);
-            if (vehicle == null)
-                return Results.NotFound();
+        var vehicle = await db.Vehicles.FindAsync(dto.Id);
+        if (vehicle == null)
+            return Results.NotFound();
 
-            mapper.Map(dto, vehicle);
+        mapper.Map(dto, vehicle);
 
-            // TODO: sprawdzenia
+        // TODO: sprawdzenia
 
-            await db.SaveChangesAsync();
+        await db.SaveChangesAsync();
 
-            return Results.Ok(new { Message = "Modified", Id = vehicle.Id });
-        };
+        return Results.Ok(new { Message = "Modified", Id = vehicle.Id });
     }
 
 
-    private static Func<ClaimsPrincipal, CaRpDbContext, GetDetailDto, Task<IResult>> VehiclesDelete()
+    private static async Task<IResult> VehiclesDelete(ClaimsPrincipal user, [FromServices] CaRpDbContext db, GetDetailDto getDetailDto)
     {
-        return async (ClaimsPrincipal user, [FromServices] CaRpDbContext db, GetDetailDto getDetailDto) =>
-        {
-            if (user.IsNotAtLeast(RoleEnum.Manager))
-                return Results.Unauthorized();
+        if (user.IsNotAtLeast(RoleEnum.Manager))
+            return Results.Unauthorized();
 
-            var vehicle = await db.Vehicles.FindAsync(getDetailDto.Id);
+        var vehicle = await db.Vehicles.FindAsync(getDetailDto.Id);
 
-            if (vehicle == null)
-                return Results.NotFound();
+        if (vehicle == null)
+            return Results.NotFound();
 
-            db.Vehicles.Remove(vehicle);
-            await db.SaveChangesAsync();
+        db.Vehicles.Remove(vehicle);
+        await db.SaveChangesAsync();
 
-            return Results.Ok(new { Message = "Deleted", Id = getDetailDto.Id });
-        };
+        return Results.Ok(new { Message = "Deleted", Id = getDetailDto.Id });
     }
 }

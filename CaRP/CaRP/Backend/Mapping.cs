@@ -15,12 +15,18 @@ public partial class Endpoints
     {
         public MappingProfile()
         {
-            CreateMap<Vehicle, VehicleDto>();
-            CreateMap<VehicleDto, Vehicle>();
-            CreateMap<WorkRegistration, WorkRegistrationDto>();
-            CreateMap<WorkRegistrationDto, WorkRegistration>();
-            CreateMap<Servicing, ServicingDto>();
-            CreateMap<ServicingDto, Servicing>();
+            CreateMap<Vehicle, VehicleDto>()
+                .ReverseMap();
+
+            CreateMap<WorkRegistration, WorkRegistrationDto>()
+                .ForMember(dest => dest.RegistrationNumber,
+                    opt => opt.MapFrom(src => src.Vehicle.RegistrationNumber))
+                .ForMember(dest => dest.Vin,
+                    opt => opt.MapFrom(src => src.Vehicle.Vin))
+                .ReverseMap();
+
+            CreateMap<Servicing, ServicingDto>()
+                .ReverseMap();
         }
     }
 }

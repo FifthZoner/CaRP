@@ -12,37 +12,37 @@ namespace CaRP.Backend;
 
 public static partial class Endpoints
 {
-    private static Func<ClaimsPrincipal, Task<IResult>> LoginDetails()
+    private static async Task<IResult> LoginDetails(ClaimsPrincipal user)
     {
-        return async (ClaimsPrincipal user) =>
-        {
-            var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Secrets.SecretKey);
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Secrets.SecretKey);
 
-            var clerkUser = await client.GetFromJsonAsync<ClerkUserResponse>($"https://api.clerk.com/v1/users/{userId}");
+        var clerkUser = await client.GetFromJsonAsync<ClerkUserResponse>($"https://api.clerk.com/v1/users/{userId}");
 
-            if (clerkUser == null)
-                return Results.InternalServerError("Could not find clerk user");
+        if (clerkUser == null)
+            return Results.InternalServerError("Could not find clerk user");
 
-            var role = GetRole(user);
-            if (role == null)
-                return Results.NotFound();
+        var role = GetRole(user);
+        if (role == null)
+            return Results.NotFound();
 
-            return Results.Ok(new LoginInfoDto() {
-                Username = user.FindFirst("login")?.Value ?? "",
-                ImageUrl = clerkUser.ImageUrl ?? null,
-                RoleLevel = role.Value
-            });
-        };
+        return Results.Ok(new LoginInfoDto() {
+            Username = user.FindFirst("login")?.Value ?? "",
+            ImageUrl = clerkUser.ImageUrl ?? null,
+            RoleLevel = role.Value,
+            FirstName = clerkUser.FirstName,
+            LastName = clerkUser.LastName
+        });
     }
 
     public static RoleEnum? GetRole(ClaimsPrincipal user)
     {
         var role = user.FindFirst("role_enum_value")?.Value;
         if (!int.TryParse(role, out var roleLevel))
-            return null;
+        // by default let's put in that the user is a driver, reduces the need for messing around in clerk dashboard
+            return RoleEnum.Driver;
         return (RoleEnum)roleLevel;
     }
 

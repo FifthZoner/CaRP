@@ -5,74 +5,65 @@ using carp.Shared.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using CaRP.Shared.Models;
 
 namespace CaRP.Backend;
 
 public partial class Endpoints
 {
-    private static Func<ClaimsPrincipal, CaRpDbContext, IMapper, Task<IResult>> WorkGetAll()
+    private static async Task<IResult> WorkGetAll(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromServices] IMapper mapper)
     {
-        return async (ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromServices] IMapper mapper) =>
-        {
-            if (user.IsNotAtLeast(RoleEnum.Driver))
-                return Results.Unauthorized();
+        if (user.IsNotAtLeast(RoleEnum.Driver))
+            return Results.Unauthorized();
 
-            var work = await db.WorkRegistrations.Include(x => x.Vehicle).ToListAsync();
-            return Results.Ok(mapper.Map<List<WorkRegistrationDto>>(work));
-        };
+        var work = await db.WorkRegistrations
+            .ProjectTo<WorkRegistrationDto>(mapper.ConfigurationProvider)
+            .ToListAsync();
+        return Results.Ok(work);
     }
 
-    private static Func<ClaimsPrincipal, CaRpDbContext, GetDetailDto, IMapper, Task<IResult>> WorkGetDetail()
+    private static async Task<IResult> WorkGetDetail(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] GetDetailDto getDetailDto, [FromServices] IMapper mapper)
     {
-        return async (ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] GetDetailDto getDetailDto, [FromServices] IMapper mapper) =>
-        {
-            if (user.IsNotAtLeast(RoleEnum.Driver))
-                return Results.Unauthorized();
+        if (user.IsNotAtLeast(RoleEnum.Driver))
+            return Results.Unauthorized();
 
-            var work = await db.WorkRegistrations
-                .Include(x => x.Vehicle)
-                .FirstOrDefaultAsync(x => x.Id == getDetailDto.Id);
+        var work = await db.WorkRegistrations
+            .ProjectTo<WorkRegistrationDto>(mapper.ConfigurationProvider)
+            .FirstOrDefaultAsync(x => x.Id == getDetailDto.Id);
 
-            if (work == null)
-                return Results.NotFound();
+        if (work == null)
+            return Results.NotFound();
 
-            return Results.Ok(mapper.Map<WorkRegistrationDto>(work));
-        };
+        return Results.Ok(work);
     }
 
-    private static Func<ClaimsPrincipal, CaRpDbContext, WorkRegistrationDto, IMapper, Task<IResult>> WorkAdd()
+    private static async Task<IResult> WorkAdd(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] WorkRegistrationDto dto, [FromServices] IMapper mapper)
     {
-        return async (ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] WorkRegistrationDto dto, [FromServices] IMapper mapper) =>
-        {
-            if (user.IsNotAtLeast(RoleEnum.Driver))
-                return Results.Unauthorized();
+        if (user.IsNotAtLeast(RoleEnum.Driver))
+            return Results.Unauthorized();
 
-            var work = mapper.Map<WorkRegistration>(dto);
-            work.Id = 0;
+        var work = mapper.Map<WorkRegistration>(dto);
+        work.Id = 0;
 
-            db.WorkRegistrations.Add(work);
-            await db.SaveChangesAsync();
+        db.WorkRegistrations.Add(work);
+        await db.SaveChangesAsync();
 
-            return Results.Ok(new { Message = "Added", Id = work.Id });
-        };
+        return Results.Ok(new { Message = "Added", Id = work.Id });
     }
 
-    private static Func<ClaimsPrincipal, CaRpDbContext, WorkRegistrationDto, IMapper, Task<IResult>> WorkEdit()
+    private static async Task<IResult> WorkEdit(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] WorkRegistrationDto dto, [FromServices] IMapper mapper)
     {
-        return async (ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] WorkRegistrationDto dto, [FromServices] IMapper mapper) =>
-        {
-            if (user.IsNotAtLeast(RoleEnum.Driver))
-                return Results.Unauthorized();
+        if (user.IsNotAtLeast(RoleEnum.Driver))
+            return Results.Unauthorized();
 
-            var work = await db.WorkRegistrations.FindAsync(dto.Id);
-            if (work == null) return Results.NotFound();
+        var work = await db.WorkRegistrations.FindAsync(dto.Id);
+        if (work == null) return Results.NotFound();
 
-            mapper.Map(dto, work);
-            await db.SaveChangesAsync();
+        mapper.Map(dto, work);
+        await db.SaveChangesAsync();
 
-            return Results.Ok(new { Message = "Modified", Id = work.Id });
-        };
+        return Results.Ok(new { Message = "Modified", Id = work.Id });
     }
 
     private static async Task<IResult> WorkDelete(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] GetDetailDto getDetailDto)

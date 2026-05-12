@@ -8,5 +8,5 @@ public class WorkRegistrationDto : WorkRegistration
 {
     public string Vin { get; set; } = null!;
 
-    public string? RegistrationNumber { get; set; } = null!;
+    public string RegistrationNumber { get; set; } = null!;
 }

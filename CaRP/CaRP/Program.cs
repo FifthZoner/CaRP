@@ -22,8 +22,9 @@ public static void Main(string[] args)
     var connString = Endpoints.Secrets.ConnString = builder.Configuration["Database:ConnString"] ?? "";
 
     // Database
-    builder.Services.AddDbContext<DbContext>(options =>
-        options.UseNpgsql(connString));
+    builder.Services.AddDbContext<CaRpDbContext>(options =>
+        options.UseNpgsql(connString)
+            .UseSnakeCaseNamingConvention());   //wielkość liter w pg mi chrzaniła sprawę
 
     // Clerk API Client (Using the official DI helper)
     builder.Services.AddClerkApiClient(config =>

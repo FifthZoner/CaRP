@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="11.0.0-preview.3.26207.106" />
         <PackageReference Include="System.Net.Http.Json" Version="8.0.0" />
     </ItemGroup>
 

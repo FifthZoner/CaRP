@@ -12,6 +12,7 @@
     <ItemGroup>
         <PackageReference Include="Clerk.Net" Version="1.15.0" />
         <PackageReference Include="Clerk.Net.DependencyInjection" Version="1.15.0" />
+        <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
         <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="8.0.0-preview.6.23329.11" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.7">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

@@ -1,0 +1,55 @@
+@typeparam TItem
+
+<div class="mb-4">
+    <!-- form -->
+    @FormTemplate
+</div>
+
+@if (Items == null)
+{
+    <p><em>Pobieranie danych...</em></p>
+}
+else
+{
+    <table class="table table-striped table-hover">
+        <thead class="table-dark">
+        <tr>
+            <!-- <th> -->
+            @TableHeader
+            <th>Akcje</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Items)
+        {
+            <tr>
+                <!-- <td> -->
+                @TableRow(item)
+                
+                <td>
+                    <button class="btn btn-sm btn-primary">Edytuj</button>
+                    <button class="btn btn-sm btn-danger">Usuń</button>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    // Elements to display
+    [Parameter]
+    public IEnumerable<TItem>? Items { get; set; }
+
+    // Adding form
+    [Parameter]
+    public RenderFragment? FormTemplate { get; set; }
+
+    // table headers
+    [Parameter]
+    public RenderFragment? TableHeader { get; set; }
+
+    // items
+    [Parameter]
+    public RenderFragment<TItem>? TableRow { get; set; }
+}

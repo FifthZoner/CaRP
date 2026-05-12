@@ -1,5 +1,6 @@
 @page "/vehicles"
 @using CaRP.Shared.Dtos
+@using CaRP.Client.Components
 @inject HttpClient Http
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
@@ -7,57 +8,46 @@
 
 <h1>Lista pojazdów</h1>
 
-@if (vehicles == null)
-{
-    <p><em>Pobieranie danych z serwera...</em></p>
-}
-else if (vehicles.Length == 0)
-{
-    <p>Brak pojazdów w bazie.</p>
-}
-else
-{
-    <table class="table table-striped table-hover">
-        <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>VIN</th>
-            <th>Nr Rejestracyjny</th>
-            <th>Typ pojazdu</th>
-            <th>Dostępny od</th>
-            <th>Dostępny do</th>
-            <th>Firmowy?</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach (var vehicle in vehicles)
-        {
-            <tr>
-                <td>@vehicle.Id</td>
-                <td>@vehicle.Vin</td>
-                <td><strong>@vehicle.RegistrationNumber</strong></td>
-                <td>@vehicle.VehicleType</td>
+<PageTemplate TItem="VehicleDto" Items="vehicles" Context="vehicle">
+    
+    <FormTemplate>
+        <div class="alert alert-info">
+            Tutaj będzie formularz dodawania pojazdu
+        </div>
+    </FormTemplate>
+
+    <TableHeader>
+        <th>ID</th>
+        <th>VIN</th>
+        <th>Nr Rejestracyjny</th>
+        <th>Typ pojazdu</th>
+        <th>Dostępny od</th>
+        <th>Dostępny do</th>
+        <th>Firmowy?</th>
+    </TableHeader>
+
+    <TableRow>
+        <td>@vehicle.Id</td>
+        <td>@vehicle.Vin</td>
+        <td><strong>@vehicle.RegistrationNumber</strong></td>
+        <td>@vehicle.VehicleType</td>
                 
-                <!-- Formatowanie daty, jeśli istnieje. W przeciwnym razie myślnik -->
-                <td>@(vehicle.AvailableFrom?.ToString("dd.MM.yyyy") ?? "-")</td>
-                <td>@(vehicle.AvailableTo?.ToString("dd.MM.yyyy") ?? "-")</td>
+        <td>@(vehicle.AvailableFrom?.ToString("dd.MM.yyyy") ?? "-")</td>
+        <td>@(vehicle.AvailableTo?.ToString("dd.MM.yyyy") ?? "-")</td>
                 
-                <!-- Zamiana True/False na Tak/Nie z użyciem prostego wyrażenia warunkowego -->
-                <td>
-                    @if (vehicle.IsOwnedByCompany)
-                    {
-                        <span class="badge bg-success">Tak</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Nie</span>
-                    }
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
-}
+        <td>
+            @if (vehicle.IsOwnedByCompany)
+            {
+                <span class="badge bg-success">Tak</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">Nie</span>
+            }
+        </td>
+    </TableRow>
+
+</PageTemplate>
 
 @code {
     private VehicleDto[]? vehicles;

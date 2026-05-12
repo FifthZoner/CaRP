@@ -46,17 +46,21 @@ public static partial class Endpoints
         return (RoleEnum)roleLevel;
     }
 
+    public static bool IsAtLeast(this ClaimsPrincipal user, RoleEnum atLeastRole)
+    {
+        var role = GetRole(user);
+        if (!role.HasValue)
+            return false;
+        return (int)role.Value >= (int)atLeastRole;
+    }
+    public static bool IsNotAtLeast(this ClaimsPrincipal user, RoleEnum atLeastRole)
+    {
+        return !IsAtLeast(user, atLeastRole);
+    }
+
     public static class Secrets {
         public static string SecretKey { get; set; } = string.Empty;
         public static string PublishableKey { get; set; } = string.Empty;
         public static string ConnString { get; set; } = string.Empty;
     }
-
-
-
-    public static async void Login(ClaimsPrincipal user)
-    {
-
-    }
-
 }

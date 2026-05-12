@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace CaRP.Shared.Models;
 
@@ -18,6 +19,6 @@ public class WorkRegistration
     public string Description { get; set; } = null!;
 
     public decimal CostPerHour { get; set; }
-
+    [JsonIgnore]
     public virtual Vehicle Vehicle { get; set; } = null!;
 }

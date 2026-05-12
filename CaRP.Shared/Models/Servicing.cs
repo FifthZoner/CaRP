@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace CaRP.Shared.Models;
 
@@ -20,6 +21,6 @@ public class Servicing
     public string MechanicName { get; set; } = null!;
 
     public decimal Cost { get; set; }
-
+    [JsonIgnore]
     public virtual Vehicle Vehicle { get; set; } = null!;
 }

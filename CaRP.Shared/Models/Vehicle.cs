@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace CaRP.Shared.Models;
 
@@ -18,8 +19,8 @@ public class Vehicle
     public bool IsOwnedByCompany { get; set; }
 
     public string VehicleType { get; set; } = null!;
-
+    [JsonIgnore]
     public virtual ICollection<Servicing> Servicings { get; set; } = new List<Servicing>();
-
+    [JsonIgnore]
     public virtual ICollection<WorkRegistration> WorkRegistrations { get; set; } = new List<WorkRegistration>();
 }

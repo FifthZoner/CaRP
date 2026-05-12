@@ -10,6 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AutoMapper" Version="16.1.1" />
         <PackageReference Include="Clerk.Net" Version="1.15.0" />
         <PackageReference Include="Clerk.Net.DependencyInjection" Version="1.15.0" />
         <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
@@ -19,13 +20,13 @@
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
 
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.14.0" />
         <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
-        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.1" />
+        <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
         <PackageReference Include="System.Net.Http.Json" Version="10.0.7" />
         <ProjectReference Include="..\CaRP.Client\CaRP.Client.csproj" />
-        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.0.1" />
+        <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.5" />
     </ItemGroup>
 

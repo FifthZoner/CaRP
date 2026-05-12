@@ -57,6 +57,8 @@ public static void Main(string[] args)
         });
     });
 
+    builder.Services.AddAutoMapper(cfg => {}, typeof(Program));
+
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment())

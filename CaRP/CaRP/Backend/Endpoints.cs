@@ -16,7 +16,10 @@ public static partial class Endpoints
         api.MapGet("/user/login_details", LoginDetails()).RequireAuthorization();
 
         api.MapGet("/vehicles/get_all", VehiclesGetAll()).RequireAuthorization();
-
+        api.MapPost("/vehicles/get_detail", VehiclesGetDetail()).RequireAuthorization();
+        api.MapPost("/vehicles/add", VehiclesAdd()).RequireAuthorization();
+        api.MapPost("/vehicles/edit", VehiclesEdit()).RequireAuthorization();
+        api.MapPost("/vehicles/delete", VehiclesDelete()).RequireAuthorization();
     }
 
 

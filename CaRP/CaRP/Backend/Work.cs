@@ -43,8 +43,16 @@ public partial class Endpoints
         if (user.IsNotAtLeast(RoleEnum.Driver))
             return Results.Unauthorized();
 
+
         var work = mapper.Map<WorkRegistration>(dto);
         work.Id = 0;
+
+        var vehicle = await db.Vehicles.FindAsync(dto.VehicleId);
+        if (vehicle == null)
+            return Results.NotFound();
+        work.Vehicle = vehicle;
+
+        work.WorkDate = DateTime.SpecifyKind(work.WorkDate ,DateTimeKind.Utc);
 
         db.WorkRegistrations.Add(work);
         await db.SaveChangesAsync();
@@ -59,8 +67,15 @@ public partial class Endpoints
 
         var work = await db.WorkRegistrations.FindAsync(dto.Id);
         if (work == null) return Results.NotFound();
-
         mapper.Map(dto, work);
+
+        var vehicle = await db.Vehicles.FindAsync(dto.VehicleId);
+        if (vehicle == null)
+            return Results.NotFound();
+        work.Vehicle = vehicle;
+
+        work.WorkDate = DateTime.SpecifyKind(work.WorkDate ,DateTimeKind.Utc);
+
         await db.SaveChangesAsync();
 
         return Results.Ok(new { Message = "Modified", Id = work.Id });

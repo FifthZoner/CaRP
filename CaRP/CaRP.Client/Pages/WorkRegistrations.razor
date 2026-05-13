@@ -61,7 +61,13 @@
         <td><strong>@work.RegistrationNumber</strong></td>
         <td>@work.ClerkUsername</td>
         <td>@(work.WorkDate.ToString("dd.MM.yyyy HH:mm"))</td>
-        <td>@work.DurationHours.ToString("N2")</td>
+        <td>
+            @{
+                var hours = (int)work.DurationHours;
+                var minutes = (int)Math.Round((work.DurationHours - hours) * 60);
+            }
+            @($"{hours}:{minutes:D2}")
+        </td>
         <td>@((work.DurationHours * work.CostPerHour).ToString("N2") + " PLN")</td>
     </TableRow>
 

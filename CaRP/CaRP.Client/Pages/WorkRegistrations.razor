@@ -7,15 +7,45 @@
 
 <PageTitle>Karty pracy</PageTitle>
 
-<h1>Karty pracy</h1>
+<h1 class="text-center mb-4">Karty pracy</h1>
 
-<PageTemplate TItem="WorkRegistrationDto" Items="works" Context="work">
+<PageTemplate TItem="WorkRegistrationDto" 
+              Items="works" 
+              NewItem="newWork"
+              OnSave="AddWork"
+              OnDetails="ShowDetails"
+              OnEdit="OpenEditModal"
+              OnDelete="DeleteWork"
+              FormTitle="Dodaj nową kartę pracy"
+              Context="work">
 
-    <FormTemplate>
-        <div class="alert alert-info">
-            Tutaj będzie formularz dodawania kart pracy
+    <FormFields>
+        <div class="col-md-4">
+            <label class="form-label font-weight-bold">Użytkownik</label>
+            <InputText class="form-control" @bind-Value="newWork.ClerkUsername" required />
         </div>
-    </FormTemplate>
+        <div class="col-md-4">
+            <label class="form-label font-weight-bold">ID Pojazdu</label>
+            @* TODO: lista rozwijalna *@
+            <InputNumber class="form-control" @bind-Value="newWork.VehicleId" required />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label font-weight-bold">Data pracy</label>
+            <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="newWork.WorkDate" required />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label font-weight-bold">Czas trwania (h)</label>
+            <InputNumber class="form-control" @bind-Value="newWork.DurationHours" required />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label font-weight-bold">Stawka (PLN/h)</label>
+            <InputNumber class="form-control" @bind-Value="newWork.CostPerHour" required />
+        </div>
+        <div class="col-md-12">
+            <label class="form-label font-weight-bold">Opis wykonanych prac</label>
+            <InputTextArea class="form-control" @bind-Value="newWork.Description" required rows="3" />
+        </div>
+    </FormFields>
 
     <TableHeader>
         <th>ID</th>
@@ -30,19 +60,172 @@
         <td>@work.Id</td>
         <td><strong>@work.RegistrationNumber</strong></td>
         <td>@work.ClerkUsername</td>
-
-        <td>@(work.WorkDate.ToString("dd.MM.yyyy"))</td>
+        <td>@(work.WorkDate.ToString("dd.MM.yyyy HH:mm"))</td>
         <td>@work.DurationHours.ToString("N2")</td>
         <td>@((work.DurationHours * work.CostPerHour).ToString("N2") + " PLN")</td>
     </TableRow>
 
 </PageTemplate>
 
+
+<DetailsModal IsVisible="@showDetailsModal" Title="Szczegóły Karty Pracy" OnClose="() => showDetailsModal = false">
+    @if (selectedWork == null)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-info" role="status"></div>
+            <p>Pobieranie danych...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>ID Karty:</strong> @selectedWork.Id</p>
+                <p><strong>Użytkownik:</strong> @selectedWork.ClerkUsername</p>
+                <p><strong>Pojazd (ID / Rejestracja):</strong> @selectedWork.VehicleId / @selectedWork.RegistrationNumber</p>
+                <p><strong>Data prac:</strong> @selectedWork.WorkDate.ToString("dd.MM.yyyy HH:mm")</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Czas trwania:</strong> @selectedWork.DurationHours.ToString("N2") h</p>
+                <p><strong>Stawka za godzinę:</strong> @selectedWork.CostPerHour.ToString("N2") PLN</p>
+                <div class="alert alert-success p-2 mt-2">
+                    <strong>Koszt całkowity:</strong> @((selectedWork.DurationHours * selectedWork.CostPerHour).ToString("N2")) PLN
+                </div>
+            </div>
+            <div class="col-12 mt-3">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Opis zlecenia</h6>
+                        <p class="card-text">@selectedWork.Description</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</DetailsModal>
+
+
+<EditModal IsVisible="@showEditModal" Title="@($"Edycja Karty Pracy ID: {editingWork.Id}")" OnClose="() => showEditModal = false">
+    <EditForm Model="editingWork" OnValidSubmit="SaveEdit">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label font-weight-bold">Użytkownik</label>
+                <InputText class="form-control" @bind-Value="editingWork.ClerkUsername" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label font-weight-bold">ID Pojazdu</label>
+                <InputNumber class="form-control" @bind-Value="editingWork.VehicleId" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label font-weight-bold">Data pracy</label>
+                <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="editingWork.WorkDate" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label font-weight-bold">Czas trwania (h)</label>
+                <InputNumber class="form-control" @bind-Value="editingWork.DurationHours" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label font-weight-bold">Stawka (PLN/h)</label>
+                <InputNumber class="form-control" @bind-Value="editingWork.CostPerHour" required />
+            </div>
+            <div class="col-md-12">
+                <label class="form-label font-weight-bold">Opis wykonanych prac</label>
+                <InputTextArea class="form-control" @bind-Value="editingWork.Description" required rows="4" />
+            </div>
+
+            <div class="col-12 text-end mt-4 pt-3 border-top">
+                <button type="button" class="btn btn-secondary me-2" @onclick="() => showEditModal = false">Anuluj</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Zapisz zmiany</button>
+            </div>
+        </div>
+    </EditForm>
+</EditModal>
+
 @code {
     private WorkRegistrationDto[]? works;
+    
+    private WorkRegistrationDto newWork = new() { WorkDate = DateTime.Now };
+    private WorkRegistrationDto editingWork = new();
+    private WorkRegistrationDto? selectedWork;
+
+    private bool showEditModal = false;
+    private bool showDetailsModal = false;
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadWorks();
+    }
+
+    private async Task LoadWorks()
+    {
         works = await Http.GetFromJsonAsync<WorkRegistrationDto[]>("/api/work/get_all");
     }
+
+    private async Task AddWork()
+    {
+        var response = await Http.PostAsJsonAsync("/api/work/add", newWork);
+        if (response.IsSuccessStatusCode)
+        {
+            newWork = new WorkRegistrationDto() { WorkDate = DateTime.Now };
+            await LoadWorks();
+        }
+    }
+    
+    private async Task ShowDetails(WorkRegistrationDto work)
+    {
+        showDetailsModal = true;
+        selectedWork = null;
+
+        var requestBody = new { Id = work.Id };
+        var response = await Http.PostAsJsonAsync("/api/work/get_detail", requestBody);
+        if (response.IsSuccessStatusCode)
+        {
+            selectedWork = await response.Content.ReadFromJsonAsync<WorkRegistrationDto>();
+        }
+        else
+        {
+            Console.WriteLine($"Error displaying work registration: {response.StatusCode}");
+        }
+    }
+
+    private void OpenEditModal(WorkRegistrationDto work)
+    {
+        editingWork = new WorkRegistrationDto
+        {
+            Id = work.Id,
+            ClerkUsername = work.ClerkUsername,
+            VehicleId = work.VehicleId,
+            WorkDate = work.WorkDate,
+            DurationHours = work.DurationHours,
+            CostPerHour = work.CostPerHour,
+            Description = work.Description,
+            RegistrationNumber = work.RegistrationNumber
+        };
+        showEditModal = true;
+    }
+
+    private async Task SaveEdit()
+    {
+        var response = await Http.PostAsJsonAsync("/api/work/edit", editingWork);
+        if (response.IsSuccessStatusCode)
+        {
+            showEditModal = false;
+            await LoadWorks();
+        }
+    }
+    
+    private async Task DeleteWork(WorkRegistrationDto work)
+    {
+        var requestBody = new { Id = work.Id };
+        var response = await Http.PostAsJsonAsync($"/api/work/delete/", requestBody);
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadWorks();
+        }
+        else
+        {
+            Console.WriteLine($"Error deleting work registration: {response.StatusCode}");
+        }
+    }
+
 }

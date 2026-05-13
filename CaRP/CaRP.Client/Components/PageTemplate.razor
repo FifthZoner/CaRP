@@ -1,8 +1,23 @@
 @typeparam TItem
+@using CaRP.Client.Components
 
-<div class="mb-4">
-    <!-- form -->
-    @FormTemplate
+<div class="card border-primary mb-4">
+    <div class="card-header bg-primary text-white">@FormTitle</div>
+    <div class="card-body">
+        @if (NewItem != null)
+        {
+            <EditForm Model="NewItem" OnValidSubmit="OnSave">
+                <div class="row g-3">
+                    @FormFields
+                    <div class="col-12 text-end">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> @ButtonLabel
+                        </button>
+                    </div>
+                </div>
+            </EditForm>
+        }
+    </div>
 </div>
 
 @if (Items == null)
@@ -20,36 +35,62 @@ else
         </tr>
         </thead>
         <tbody>
-        @foreach (var item in Items)
+        @if (Items != null)
         {
-            <tr>
-                <!-- <td> -->
-                @TableRow(item)
-                
-                <td>
-                    <button class="btn btn-sm btn-primary">Edytuj</button>
-                    <button class="btn btn-sm btn-danger">Usuń</button>
-                </td>
-            </tr>
+            @foreach (var item in Items)
+            {
+                <tr>
+                    @TableRow(item)
+                    <td>
+                        <button class="btn btn-sm btn-info text-white" @onclick="() => OnDetails.InvokeAsync(item)">Szczegóły</button>
+                        <button class="btn btn-sm btn-primary" @onclick="() => OnEdit.InvokeAsync(item)">Edytuj</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => StartDelete(item)">Usuń</button>
+                    </td>
+                </tr>
+            }
         }
         </tbody>
     </table>
 }
 
+
+<ConfirmationModal IsVisible="showModal" 
+                   Title="Usuwanie elementu" 
+                   Message="Czy na pewno chcesz trwale usunąć ten rekord?"
+                   OnConfirm="ConfirmDelete" 
+                   OnCancel="() => showModal = false" />
+
+
 @code {
-    // Elements to display
-    [Parameter]
-    public IEnumerable<TItem>? Items { get; set; }
+    [Parameter] public TItem? NewItem { get; set; }
+    [Parameter] public string FormTitle { get; set; } = "Dodaj nowy";
+    [Parameter] public string ButtonLabel { get; set; } = "Zapisz";
+    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public RenderFragment? FormFields { get; set; }
 
-    // Adding form
-    [Parameter]
-    public RenderFragment? FormTemplate { get; set; }
+    [Parameter] public IEnumerable<TItem>? Items { get; set; }
+    [Parameter] public RenderFragment? TableHeader { get; set; }
+    [Parameter] public RenderFragment<TItem>? TableRow { get; set; }
+    
+    [Parameter] public EventCallback<TItem> OnDetails { get; set; }
+    [Parameter] public EventCallback<TItem> OnDelete { get; set; }
+    [Parameter] public EventCallback<TItem> OnEdit { get; set; }
+    
+    private bool showModal = false;
+    private TItem? itemToDelete;
 
-    // table headers
-    [Parameter]
-    public RenderFragment? TableHeader { get; set; }
+    private void StartDelete(TItem item)
+    {
+        itemToDelete = item;
+        showModal = true;
+    }
 
-    // items
-    [Parameter]
-    public RenderFragment<TItem>? TableRow { get; set; }
+    private async Task ConfirmDelete()
+    {
+        showModal = false;
+        if (itemToDelete != null)
+        {
+            await OnDelete.InvokeAsync(itemToDelete);
+        }
+    }
 }

@@ -6,16 +6,48 @@
 
 <PageTitle>Pojazdy</PageTitle>
 
-<h1>Lista pojazdów</h1>
+<h1 class="text-center">Lista pojazdów</h1>
 
-<PageTemplate TItem="VehicleDto" Items="vehicles" Context="vehicle">
+<PageTemplate TItem="VehicleDto" 
+              Items="vehicles" 
+              NewItem="newVehicle" 
+              OnSave="AddVehicle" 
+              OnDetails="ShowDetails"
+              OnEdit="OpenEditModal"
+              OnDelete="DeleteVehicle"
+              FormTitle="Dodaj nowy pojazd"
+              Context="vehicle">
     
-    <FormTemplate>
-        <div class="alert alert-info">
-            Tutaj będzie formularz dodawania pojazdu
+    <FormFields>
+        <div class="col-md-3">
+            <label class="form-label">VIN</label>
+            <InputText class="form-control" @bind-Value="newVehicle.Vin" required />
         </div>
-    </FormTemplate>
-
+        <div class="col-md-3">
+            <label class="form-label">Nr Rejestracyjny</label>
+            <InputText class="form-control" @bind-Value="newVehicle.RegistrationNumber" required />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Typ pojazdu</label>
+            <InputText class="form-control" @bind-Value="newVehicle.VehicleType" required />
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <div class="form-check mb-2">
+                <InputCheckbox class="form-check-input" id="isCompany" @bind-Value="newVehicle.IsOwnedByCompany" />
+                <label class="form-check-label" for="isCompany">Firmowy?</label>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Dostępny od</label>
+            <InputDate class="form-control" @bind-Value="newVehicle.AvailableFrom" />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">Dostępny do</label>
+            <InputDate class="form-control" @bind-Value="newVehicle.AvailableTo" />
+        </div>
+    </FormFields>
+    
+    <!-- Table of vehicle contents-->
     <TableHeader>
         <th>ID</th>
         <th>VIN</th>
@@ -49,11 +81,170 @@
 
 </PageTemplate>
 
+
+<DetailsModal IsVisible="@showDetailsModal" Title="Szczegóły Pojazdu" OnClose="() => showDetailsModal = false">
+    @if (selectedVehicle == null)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-info" role="status"></div>
+            <p>Pobieranie danych...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>ID:</strong> @selectedVehicle.Id</p>
+                <p><strong>Nr Rejestracyjny:</strong> @selectedVehicle.RegistrationNumber</p>
+                <p><strong>VIN:</strong> @selectedVehicle.Vin</p>
+                <p><strong>Typ:</strong> @selectedVehicle.VehicleType</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Firmowy:</strong> @(selectedVehicle.IsOwnedByCompany ? "Tak" : "Nie")</p>
+                <p><strong>Dostępny od:</strong> @(selectedVehicle.AvailableFrom?.ToString("dd.MM.yyyy") ?? "Brak")</p>
+                <p><strong>Dostępny do:</strong> @(selectedVehicle.AvailableTo?.ToString("dd.MM.yyyy") ?? "Brak")</p>
+            </div>
+        </div>
+    }
+</DetailsModal>
+
+
+<EditModal IsVisible="@showEditModal" 
+           Title="@($"Edytuj pojazd: {editingVehicle.RegistrationNumber}")" 
+           OnClose="() => showEditModal = false">
+    
+    <EditForm Model="editingVehicle" OnValidSubmit="SaveEdit">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label font-weight-bold">VIN</label>
+                <InputText class="form-control" @bind-Value="editingVehicle.Vin" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label font-weight-bold">Nr Rejestracyjny</label>
+                <InputText class="form-control" @bind-Value="editingVehicle.RegistrationNumber" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label font-weight-bold">Typ pojazdu</label>
+                <InputText class="form-control" @bind-Value="editingVehicle.VehicleType" required />
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <div class="form-check mb-2">
+                    <InputCheckbox class="form-check-input" id="editIsCompany" @bind-Value="editingVehicle.IsOwnedByCompany" />
+                    <label class="form-check-label" for="editIsCompany">Firmowy?</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label font-weight-bold">Dostępny od</label>
+                <InputDate class="form-control" @bind-Value="editingVehicle.AvailableFrom" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label font-weight-bold">Dostępny do</label>
+                <InputDate class="form-control" @bind-Value="editingVehicle.AvailableTo" />
+            </div>
+
+            <div class="col-12 text-end mt-4 pt-3 border-top">
+                <button type="button" class="btn btn-secondary me-2" @onclick="() => showEditModal = false">
+                    Anuluj
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Zapisz zmiany
+                </button>
+            </div>
+        </div>
+    </EditForm>
+</EditModal>
+
 @code {
     private VehicleDto[]? vehicles;
+    private VehicleDto newVehicle = new();
+    
+    private bool showDetailsModal = false;
+    private VehicleDto? selectedVehicle = null;
+    
+    private bool showEditModal = false;
+    private VehicleDto editingVehicle = new();
     
     protected override async Task OnInitializedAsync()
     {
+        await LoadVehicles();
+    }
+    
+    private async Task LoadVehicles()
+    {
         vehicles = await Http.GetFromJsonAsync<VehicleDto[]>("/api/vehicles/get_all");
+    }
+    
+    private async Task ShowDetails(VehicleDto vehicle)
+    {
+        selectedVehicle = null;
+        showDetailsModal = true;
+        
+        var requestBody = new { Id = vehicle.Id };
+        var response = await Http.PostAsJsonAsync("/api/vehicles/get_detail", requestBody);
+        if (response.IsSuccessStatusCode)
+        {
+            selectedVehicle = await response.Content.ReadFromJsonAsync<VehicleDto>();
+        }
+    }
+    
+    private async Task AddVehicle()
+    {
+        var response = await Http.PostAsJsonAsync("/api/vehicles/add", newVehicle);
+
+        if (response.IsSuccessStatusCode)
+        {
+            newVehicle = new VehicleDto();
+            await LoadVehicles();
+        }
+        else
+        {
+            Console.WriteLine($"Error adding a vehicle: {response.StatusCode}");
+        }
+    }
+    
+    private void OpenEditModal(VehicleDto vehicle)
+    {
+        editingVehicle = new VehicleDto 
+        {
+            Id = vehicle.Id,
+            Vin = vehicle.Vin,
+            RegistrationNumber = vehicle.RegistrationNumber,
+            AvailableFrom = vehicle.AvailableFrom,
+            AvailableTo = vehicle.AvailableTo,
+            IsOwnedByCompany = vehicle.IsOwnedByCompany,
+            VehicleType = vehicle.VehicleType
+        };
+        showEditModal = true;
+    }
+    
+    private async Task SaveEdit()
+    {
+        var response = await Http.PostAsJsonAsync("/api/vehicles/edit", editingVehicle);
+
+        if (response.IsSuccessStatusCode)
+        {
+            showEditModal = false;
+            await LoadVehicles();
+        }
+        else
+        {
+            Console.WriteLine($"Error editing vehicle: {response.StatusCode}");
+        }
+    }
+    
+    private async Task DeleteVehicle(VehicleDto vehicle)
+    {
+        var requestBody = new { Id = vehicle.Id };
+        
+        var response = await Http.PostAsJsonAsync("/api/vehicles/delete", requestBody);
+
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadVehicles(); 
+        }
+        else
+        {
+            Console.WriteLine($"Error deleting vehicle: {response.StatusCode}");
+        }
     }
 }

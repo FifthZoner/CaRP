@@ -1,23 +1,19 @@
-@if (IsVisible)
-{
-    <div class="modal fade show d-block" style="background-color: rgba(0,0,0,0.5);" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">@Title</h5>
-                    <button type="button" class="btn-close" @onclick="Cancel"></button>
-                </div>
-                <div class="modal-body">
-                    <p>@Message</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" @onclick="Cancel">Anuluj</button>
-                    <button type="button" class="btn btn-danger" @onclick="Confirm">Potwierdź</button>
-                </div>
-            </div>
-        </div>
-    </div>
-}
+<BaseModal IsVisible="IsVisible"
+           Title="@Title"
+           HeaderColorClass="bg-danger"
+           ModalSizeClass="" 
+           OnClose="Cancel">
+    
+    <ChildContent>
+        <p>@Message</p>
+    </ChildContent>
+    
+    <FooterContent>
+        <button type="button" class="btn btn-secondary" @onclick="Cancel">Anuluj</button>
+        <button type="button" class="btn btn-danger" @onclick="Confirm">Potwierdź</button>
+    </FooterContent>
+
+</BaseModal>
 
 @code {
     [Parameter] public bool IsVisible { get; set; }

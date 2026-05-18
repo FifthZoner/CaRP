@@ -22,7 +22,7 @@
     <FormFields>
         <div class="col-md-4">
             <label class="form-label font-weight-bold">Użytkownik</label>
-            <InputText class="form-control" @bind-Value="newWork.ClerkUsername" required />
+            <InputText class="form-control" @bind-Value="newWork.ClerkUsername" disabled />
         </div>
         <div class="col-md-4">
             <label class="form-label font-weight-bold">ID Pojazdu</label>
@@ -150,6 +150,8 @@
 @code {
     private WorkRegistrationDto[]? works;
     
+    private string currentUserName = "";
+    
     private WorkRegistrationDto newWork = new() { WorkDate = DateTime.Now };
     private WorkRegistrationDto editingWork = new();
     private WorkRegistrationDto? selectedWork;
@@ -160,6 +162,25 @@
     protected override async Task OnInitializedAsync()
     {
         await LoadWorks();
+        await LoadCurrentUser();
+    }
+    
+    private async Task LoadCurrentUser()
+    {
+        try
+        {
+            var userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            
+            if (userData != null && !string.IsNullOrEmpty(userData.Username))
+            {
+                currentUserName = userData.Username;
+                newWork.ClerkUsername = currentUserName; 
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Couldn't load user info: {ex.Message}");
+        }
     }
 
     private async Task LoadWorks()
@@ -172,7 +193,11 @@
         var response = await Http.PostAsJsonAsync("/api/work/add", newWork);
         if (response.IsSuccessStatusCode)
         {
-            newWork = new WorkRegistrationDto() { WorkDate = DateTime.Now };
+            newWork = new WorkRegistrationDto()
+            {
+                WorkDate = DateTime.Now,
+                ClerkUsername = currentUserName
+            };
             await LoadWorks();
         }
     }

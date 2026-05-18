@@ -1,6 +1,265 @@
-@page "/Services"
-<h3 class="text-center">Serwisy</h3>
+@page "/services"
+@using CaRP.Shared.Dtos
+@using CaRP.Client.Components
+@inject HttpClient Http
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
+
+<PageTitle>Serwisy Pojazdów</PageTitle>
+
+<h1 class="text-center mb-4">Serwisowanie i Naprawy</h1>
+
+<PageTemplate TItem="ServicingDto" 
+              Items="servicings" 
+              NewItem="newServicing"
+              OnSave="AddServicing"
+              OnDelete="DeleteServicing"
+              OnDetails="ShowDetails"
+              OnEdit="OpenEditModal"
+              FormTitle="Dodaj nowy wpis serwisowy"
+              ButtonLabel="Zapisz serwis"
+              Context="service">
+
+    <FormFields>
+        <div class="col-md-3">
+            <label class="form-label font-weight-bold">Nr Serwisu</label>
+            <InputText class="form-control" @bind-Value="newServicing.ServiceNumber" required />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label font-weight-bold">ID Pojazdu</label>
+            <InputNumber class="form-control" @bind-Value="newServicing.VehicleId" required />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label font-weight-bold">Użytkownik zlecający</label>
+            <InputText class="form-control" @bind-Value="newServicing.ClerkUsername" disabled />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label font-weight-bold">Data Serwisu</label>
+            <InputDate class="form-control" @bind-Value="newServicing.ServiceDate" required />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label font-weight-bold">Mechanik / Warsztat</label>
+            <InputText class="form-control" @bind-Value="newServicing.MechanicName" required />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label font-weight-bold">Koszt całkowity (PLN)</label>
+            <InputNumber class="form-control" @bind-Value="newServicing.Cost" required />
+        </div>
+        <div class="col-md-12">
+            <label class="form-label font-weight-bold">Opis usterki / wykonanych prac</label>
+            <InputTextArea class="form-control" @bind-Value="newServicing.IssueDescription" required rows="3" />
+        </div>
+    </FormFields>
+
+    <TableHeader>
+        <th>ID</th>
+        <th>Nr Zlecenia</th>
+        <th>Pojazd (ID)</th>
+        <th>Data</th>
+        <th>Warsztat</th>
+        <th>Koszt</th>
+    </TableHeader>
+
+    <TableRow>
+        <td>@service.Id</td>
+        <td><strong>@service.ServiceNumber</strong></td>
+        <td>@service.VehicleId</td>
+        <td>@service.ServiceDate.ToString("dd.MM.yyyy")</td>
+        <td>@service.MechanicName</td>
+        <td>@service.Cost.ToString("N2") PLN</td>
+    </TableRow>
+
+</PageTemplate>
+
+<DetailsModal IsVisible="@showDetailsModal" Title="Szczegóły Serwisu" OnClose="() => showDetailsModal = false">
+    @if (selectedServicing == null)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-info" role="status"></div>
+            <p>Pobieranie danych...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>ID Wpisu:</strong> @selectedServicing.Id</p>
+                <p><strong>Nr Serwisu / Dokumentu:</strong> @selectedServicing.ServiceNumber</p>
+                <p><strong>Pojazd (ID):</strong> @selectedServicing.VehicleId</p>
+                <p><strong>Zlecający:</strong> @selectedServicing.ClerkUsername</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Data:</strong> @selectedServicing.ServiceDate.ToString("dd.MM.yyyy")</p>
+                <p><strong>Wykonawca:</strong> @selectedServicing.MechanicName</p>
+                <div class="alert alert-danger p-2 mt-2">
+                    <strong>Koszt naprawy:</strong> @selectedServicing.Cost.ToString("N2") PLN
+                </div>
+            </div>
+            <div class="col-12 mt-3">
+                <div class="card bg-light border-danger">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">Opis problemu / wykonanych prac:</h6>
+                        <p class="card-text">@selectedServicing.IssueDescription</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</DetailsModal>
+
+
+<EditModal IsVisible="@showEditModal" Title="@($"Edycja wpisu serwisowego: {editingServicing.ServiceNumber}")" OnClose="() => showEditModal = false">
+    <EditForm Model="editingServicing" OnValidSubmit="SaveEdit">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label font-weight-bold">Nr Serwisu</label>
+                <InputText class="form-control" @bind-Value="editingServicing.ServiceNumber" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label font-weight-bold">ID Pojazdu</label>
+                <InputNumber class="form-control" @bind-Value="editingServicing.VehicleId" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label font-weight-bold">Zlecający</label>
+                <InputText class="form-control" @bind-Value="editingServicing.ClerkUsername" required />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label font-weight-bold">Data Serwisu</label>
+                <InputDate class="form-control" @bind-Value="editingServicing.ServiceDate" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label font-weight-bold">Mechanik / Warsztat</label>
+                <InputText class="form-control" @bind-Value="editingServicing.MechanicName" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label font-weight-bold">Koszt</label>
+                <InputNumber class="form-control" @bind-Value="editingServicing.Cost" required />
+            </div>
+            <div class="col-md-12">
+                <label class="form-label font-weight-bold">Opis</label>
+                <InputTextArea class="form-control" @bind-Value="editingServicing.IssueDescription" required rows="4" />
+            </div>
+
+            <div class="col-12 text-end mt-4 pt-3 border-top">
+                <button type="button" class="btn btn-secondary me-2" @onclick="() => showEditModal = false">Anuluj</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Zapisz zmiany</button>
+            </div>
+        </div>
+    </EditForm>
+</EditModal>
 
 @code {
+    private ServicingDto[]? servicings;
     
+    private string currentUserName = "";
+    private ServicingDto newServicing = new() { ServiceDate = DateOnly.FromDateTime(DateTime.Now) };
+    private ServicingDto editingServicing = new();
+    private ServicingDto? selectedServicing;
+
+    private bool showEditModal = false;
+    private bool showDetailsModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadServicings();
+        await LoadCurrentUser();
+    }
+
+    private async Task LoadCurrentUser()
+    {
+        try
+        {
+            var userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            
+            if (userData != null && !string.IsNullOrEmpty(userData.Username))
+            {
+                currentUserName = userData.Username;
+                newServicing.ClerkUsername = currentUserName; 
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Couldn't load user info: {ex.Message}");
+        }
+    }
+    
+    private async Task LoadServicings()
+    {
+        servicings = await Http.GetFromJsonAsync<ServicingDto[]>("/api/servicings/get_all");
+    }
+    
+    private async Task ShowDetails(ServicingDto service)
+    {
+        showDetailsModal = true;
+        selectedServicing = null; 
+        
+        var requestBody = new { Id = service.Id };
+        var response = await Http.PostAsJsonAsync("/api/servicings/get_detail", requestBody);
+        if (response.IsSuccessStatusCode)
+        {
+            selectedServicing = await response.Content.ReadFromJsonAsync<ServicingDto>();
+        }
+    }
+
+    private async Task AddServicing()
+    {
+        var response = await Http.PostAsJsonAsync("/api/servicings/add", newServicing);
+        if (response.IsSuccessStatusCode)
+        {
+            newServicing = new ServicingDto()
+            {
+                ServiceDate = DateOnly.FromDateTime(DateTime.Now),
+                ClerkUsername = currentUserName
+            };
+            await LoadServicings();
+        }
+        else
+        {
+            Console.WriteLine($"Error adding a service: {response.StatusCode}");
+        }
+    }
+
+    private async Task DeleteServicing(ServicingDto service)
+    {
+        var requestBody = new { Id = service.Id };
+        
+        var response = await Http.PostAsJsonAsync($"/api/servicings/delete", requestBody);
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadServicings();
+        }
+        else
+        {
+            Console.WriteLine($"Error deleting a service: {response.StatusCode}");
+        }
+    }
+
+    private void OpenEditModal(ServicingDto service)
+    {
+        editingServicing = new ServicingDto
+        {
+            Id = service.Id,
+            ServiceNumber = service.ServiceNumber,
+            VehicleId = service.VehicleId,
+            ClerkUsername = service.ClerkUsername,
+            IssueDescription = service.IssueDescription,
+            ServiceDate = service.ServiceDate,
+            MechanicName = service.MechanicName,
+            Cost = service.Cost
+        };
+        showEditModal = true;
+    }
+
+    private async Task SaveEdit()
+    {
+        var response = await Http.PostAsJsonAsync("/api/servicings/edit", editingServicing);
+        if (response.IsSuccessStatusCode)
+        {
+            showEditModal = false;
+            await LoadServicings();
+        }
+        else
+        {
+            Console.WriteLine($"Error editing a service: {response.StatusCode}");
+        }
+    }
 }

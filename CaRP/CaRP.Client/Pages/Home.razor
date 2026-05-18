@@ -1,48 +1,64 @@
 ﻿@page "/home"
-@using System.Net
-@using System.Net.Http
-@using System.Net.Http.Json
-@using System.Threading.Tasks
 @using CaRP.Shared.Dtos
+@using carp.Shared.Enums
 @rendermode InteractiveWebAssembly
-@inject IJSRuntime JSRuntime
 @inject HttpClient Http
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Panel Użytkownika - CaRP</PageTitle>
 
-<h1 class="text-center">Welcome to CaRP</h1>
+<div class="container mt-5">
+    @if (userData == null)
+    {
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-3 text-muted">Ładowanie Twojego profilu...</p>
+        </div>
+    }
+    else
+    {
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                    <div class="card-header bg-primary text-white py-4 text-center">
+                        <h2 class="mb-0">Witaj, @userData.Username!</h2>
+                    </div>
+                    <div class="card-body p-5 text-center">
+                        <div class="mb-4">
+                            <i class="bi bi-person-badge text-primary" style="font-size: 3rem;"></i>
+                        </div>
+                        
+                        <h4 class="mb-4">Informacje o profilu</h4>
+                        <div class="list-group list-group-flush mb-5">
+                            <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <span class="text-muted">Twoja rola:</span>
+                                <span class="badge bg-info text-dark rounded-pill fs-6 px-3">@userData.RoleLevel</span>
+                            </div>
+                        </div>
 
-<h1 class="text-center">API Data</h1>
-
-@if (apiResponse == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <p>Response from API: @apiResponse</p>
-}
-
-<button class="btn btn-secondary" @onclick="CallApi">Fetch Secure Data</button>
+                        <div class="d-grid gap-3 mt-4">
+                            <a href="/WorkRegistrations" class="btn btn-success btn-lg shadow-sm">
+                                <i class="bi bi-clipboard-data me-2"></i> Przejdź do Kart Pracy
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
 
 @code {
-    // ładowanie danych
-    private string? apiResponse;
+    private LoginInfoDto? userData;
 
-    private async Task CallApi()
+    protected override async Task OnInitializedAsync()
     {
         try
         {
-            var result = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
-            apiResponse = $"Name: {result?.Username}, ImageUrl: {result?.ImageUrl}, RoleLevel: {result?.RoleLevel}";
+            userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex)
         {
-            // This will catch 401 Unauthorized if the token is missing or invalid
-            Console.WriteLine($"Request failed: {ex.Message}");
-            apiResponse = "Unauthorized or Server Error";
+            Console.WriteLine($"Error loading user profile: {ex.Message}");
         }
     }
-
-
 }

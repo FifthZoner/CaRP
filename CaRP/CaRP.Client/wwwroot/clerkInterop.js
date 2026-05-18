@@ -1,12 +1,17 @@
 // wwwroot/js/clerkInterop.js
 window.clerkInterop = {
-    init: async (publishableKey) => {
+    initPromise: null,
+
+    init: async function () {
         if (!window.Clerk) {
-            console.error("Clerk script not loaded. Check index.html/App.razor");
+            console.error("Clerk script not loaded yet.");
             return;
         }
-        await Clerk.load();
-        console.log("Clerk initialized");
+        if (!this.initPromise) {
+            this.initPromise = window.Clerk.load();
+        }
+        await this.initPromise;
+        console.log("Clerk initialized successfully");
     },
 
     openSignIn: async () => {
@@ -14,9 +19,11 @@ window.clerkInterop = {
     },
 
     getAccessToken: async function () {
-            if (!window.Clerk || !window.Clerk.session) {
-                return null;
-            }
+        await this.init();
+        
+        if (!window.Clerk || !window.Clerk.session) {
+            return null;
+        }
             // This retrieves the short-lived JWT (session token)
             return await window.Clerk.session.getToken({ template: "rolelevel" });
         },
@@ -25,3 +32,5 @@ window.clerkInterop = {
         await Clerk.signOut();
     }
 };
+
+window.clerkInterop.init();

@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using CaRP.Shared.Dtos;
 using carp.Shared.Enums;
+using carp.Shared.Permissions;
 using Clerk.Net.Client;
 
 namespace CaRP.Backend;
@@ -49,13 +50,65 @@ public static partial class Endpoints
     public static bool IsAtLeast(this ClaimsPrincipal user, RoleEnum atLeastRole)
     {
         var role = GetRole(user);
-        if (!role.HasValue)
+        if (!role.HasValue || user.FindFirst("login") == null)
             return false;
         return (int)role.Value >= (int)atLeastRole;
     }
     public static bool IsNotAtLeast(this ClaimsPrincipal user, RoleEnum atLeastRole)
     {
         return !IsAtLeast(user, atLeastRole);
+    }
+
+    public static string Login(this ClaimsPrincipal user) => user.FindFirst("login")?.Value ?? "";
+
+
+    public static bool Has(this ClaimsPrincipal user, Func<RoleEnum, bool> permissionCheck)
+    {
+        var role = GetRole(user);
+        if (role == null)
+            return false;
+
+        return permissionCheck(role.Value);
+    }
+
+    public static bool HasAny(this ClaimsPrincipal user, params Func<RoleEnum, bool>[] permissionCheck)
+    {
+        var role = GetRole(user);
+        if (role == null)
+            return false;
+
+        return permissionCheck.Any(x => x(role.Value));
+    }
+
+    public static bool HasAll(this ClaimsPrincipal user, params Func<RoleEnum, bool>[] permissionCheck)
+    {
+        var role = GetRole(user);
+        if (role == null)
+            return false;
+
+        return permissionCheck.All(x => x(role.Value));
+    }
+
+    public static bool CanWrite(this ClaimsPrincipal user, in Perms permissions, in string dtoLogin)
+    {
+        if (user.HasAll(Perms.Services.CanFullAll))
+            return true;
+
+        if (!user.HasAll(Perms.Services.CanFullOwn))
+            return false;
+
+        return user.Login() == dtoLogin;
+    }
+
+    public static bool CanRead(this ClaimsPrincipal user, in Perms permissions, in string dtoLogin)
+    {
+        if (user.HasAll(Perms.Services.CanReadAll))
+            return true;
+
+        if (!user.HasAll(Perms.Services.CanReadOwn))
+            return false;
+
+        return user.Login() == dtoLogin;
     }
 
     public static class Secrets {

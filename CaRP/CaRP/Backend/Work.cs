@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using CaRP.Shared.Models;
+using carp.Shared.Permissions;
 
 namespace CaRP.Backend;
 
@@ -17,9 +18,19 @@ public partial class Endpoints
         if (user.IsNotAtLeast(RoleEnum.Driver))
             return Results.Unauthorized();
 
-        var work = await db.WorkRegistrations
-            .ProjectTo<WorkRegistrationDto>(mapper.ConfigurationProvider)
-            .ToListAsync();
+        List<WorkRegistrationDto> work;
+
+        if (user.Has(Perms.Work.CanReadAll))
+            work = await db.WorkRegistrations
+                .ProjectTo<WorkRegistrationDto>(mapper.ConfigurationProvider)
+                .ToListAsync();
+        else if (user.Has(Perms.Work.CanReadOwn))
+            work = await db.WorkRegistrations
+                .Where(x => x.ClerkUsername == user.Login())
+                .ProjectTo<WorkRegistrationDto>(mapper.ConfigurationProvider)
+                .ToListAsync();
+        else return Results.Unauthorized();
+
         return Results.Ok(work);
     }
 
@@ -34,6 +45,10 @@ public partial class Endpoints
 
         if (work == null)
             return Results.NotFound();
+
+        if (!user.Has(Perms.Work.CanReadAll))
+            if (!user.Has(Perms.Work.CanReadOwn) || work.ClerkUsername != user.Login())
+                return Results.Unauthorized();
 
         return Results.Ok(work);
     }

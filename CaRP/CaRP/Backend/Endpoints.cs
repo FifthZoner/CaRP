@@ -13,19 +13,25 @@ public static partial class Endpoints
         // testing
         api.MapGet("/test", () => Results.Ok(new { Message = "Backend works!" }));
 
-        api.MapGet("/user/login_details", LoginDetails).RequireAuthorization();
+        api.MapGet("/user/login_details",   LoginDetails)     .RequireAuthorization();
 
-        api.MapGet("/vehicles/get_all", VehiclesGetAll).RequireAuthorization();
+        api.MapGet ("/vehicles/get_all",    VehiclesGetAll)   .RequireAuthorization();
         api.MapPost("/vehicles/get_detail", VehiclesGetDetail).RequireAuthorization();
-        api.MapPost("/vehicles/add", VehiclesAdd).RequireAuthorization();
-        api.MapPost("/vehicles/edit", VehiclesEdit).RequireAuthorization();
-        api.MapPost("/vehicles/delete", VehiclesDelete).RequireAuthorization();
+        api.MapPost("/vehicles/add",        VehiclesAdd)      .RequireAuthorization();
+        api.MapPost("/vehicles/edit",       VehiclesEdit)     .RequireAuthorization();
+        api.MapPost("/vehicles/delete",     VehiclesDelete)   .RequireAuthorization();
 
-        api.MapGet("/work/get_all", WorkGetAll).RequireAuthorization();
-        api.MapPost("/work/get_detail", WorkGetDetail).RequireAuthorization();
-        api.MapPost("/work/add", WorkAdd).RequireAuthorization();
-        api.MapPost("/work/edit", WorkEdit).RequireAuthorization();
-        api.MapPost("/work/delete", WorkDelete).RequireAuthorization();
+        api.MapGet ("/work/get_all",        WorkGetAll)       .RequireAuthorization();
+        api.MapPost("/work/get_detail",     WorkGetDetail)    .RequireAuthorization();
+        api.MapPost("/work/add",            WorkAdd)          .RequireAuthorization();
+        api.MapPost("/work/edit",           WorkEdit)         .RequireAuthorization();
+        api.MapPost("/work/delete",         WorkDelete)       .RequireAuthorization();
+
+        api.MapGet ("/service/get_all",     ServiceGetAll)    .RequireAuthorization();
+        api.MapPost("/service/get_detail",  ServiceGetDetail) .RequireAuthorization();
+        api.MapPost("/service/add",         ServiceAdd)       .RequireAuthorization();
+        api.MapPost("/service/edit",        ServiceEdit)      .RequireAuthorization();
+        api.MapPost("/service/delete",      ServiceDelete)    .RequireAuthorization();
     }
 
 

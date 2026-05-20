@@ -2,6 +2,7 @@
 @using CaRP.Shared.Dtos
 @using CaRP.Client.Components
 @inject HttpClient Http
+@inject NavigationManager Nav
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
 <PageTitle>Pojazdy</PageTitle>
@@ -154,6 +155,7 @@
     </EditForm>
 </EditModal>
 
+
 @code {
     private VehicleDto[]? vehicles;
     private VehicleDto newVehicle = new();
@@ -166,7 +168,21 @@
     
     protected override async Task OnInitializedAsync()
     {
-        await LoadVehicles();
+        try
+        {
+            var userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            if (userData == null || (int)userData.RoleLevel < 2)
+            {
+                Nav.NavigateTo("/home");
+                return;
+            }
+
+            await LoadVehicles();
+        }
+        catch
+        {
+            Nav.NavigateTo("/");
+        }
     }
     
     private async Task LoadVehicles()

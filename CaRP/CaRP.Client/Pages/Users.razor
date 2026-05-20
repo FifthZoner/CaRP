@@ -1,7 +1,206 @@
 @page "/users"
+@using CaRP.Shared.Dtos
+@using CaRP.Client.Components
+@using carp.Shared.Enums
+@inject HttpClient Http
+@inject NavigationManager Nav
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
-<h3 class="text-center">Użytkownicy</h3>
+<PageTitle>Zarządzanie Użytkownikami</PageTitle>
+
+<h1 class="text-center mb-4">Użytkownicy Systemu</h1>
+
+<PageTemplate TItem="UserDto" 
+              Items="users" 
+              NewItem="newUser"
+              OnSave="AddUser"
+              OnDelete="DeleteUser"
+              OnDetails="ShowDetails"
+              OnEdit="OpenEditModal"
+              FormTitle="Dodaj nowego użytkownika"
+              ButtonLabel="Zapisz"
+              Context="user">
+
+    <FormFields>
+        <div class="col-md-3">
+            <label class="form-label font-weight-bold">Nazwa użytkownika</label>
+            <InputText class="form-control" @bind-Value="newUser.Username" required />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label font-weight-bold">Email</label>
+            <InputText type="email" class="form-control" @bind-Value="newUser.Email" required />
+        </div>
+        <div class="col-md-3">
+            <label class="form-label font-weight-bold">Rola</label>
+            <InputSelect class="form-select" @bind-Value="newUser.RoleLevel">
+                @foreach (var role in Enum.GetValues<RoleEnum>())
+                {
+                    <option value="@role">@role</option>
+                }
+            </InputSelect>
+        </div>
+    </FormFields>
+
+    <TableHeader>
+        <th>Username</th>
+        <th>Imię i Nazwisko</th>
+        <th>Email</th>
+        <th>Rola</th>
+    </TableHeader>
+
+    <TableRow>
+        <td><strong>@user.Username</strong></td>
+        <td>@user.FirstName @user.LastName</td>
+        <td>@user.Email</td>
+        <td>
+            <span class="badge bg-primary">@user.RoleLevel</span>
+        </td>
+    </TableRow>
+
+</PageTemplate>
+
+
+<EditModal IsVisible="@showEditModal" Title="@($"Edycja użytkownika: {editingUser.Username}")" OnClose="() => showEditModal = false">
+    <EditForm Model="editingUser" OnValidSubmit="SaveEdit">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label font-weight-bold">Imię</label>
+                <InputText class="form-control" @bind-Value="editingUser.FirstName" />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label font-weight-bold">Nazwisko</label>
+                <InputText class="form-control" @bind-Value="editingUser.LastName" />
+            </div>
+            <div class="col-md-12">
+                <label class="form-label font-weight-bold">Rola w systemie</label>
+                <InputSelect class="form-select" @bind-Value="editingUser.RoleLevel">
+                    @foreach (var role in Enum.GetValues<RoleEnum>())
+                    {
+                        <option value="@role">@role</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="col-12 text-end mt-4 pt-3 border-top">
+                <button type="button" class="btn btn-secondary me-2" @onclick="() => showEditModal = false">Anuluj</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Zapisz zmiany</button>
+            </div>
+        </div>
+    </EditForm>
+</EditModal>
+
+<DetailsModal IsVisible="@showDetailsModal" Title="Szczegóły Użytkownika" OnClose="() => showDetailsModal = false">
+    @if (selectedUser == null)
+    {
+        <div class="text-center"><div class="spinner-border text-info"></div></div>
+    }
+    else
+    {
+        <p><strong>ID Clerka:</strong> @selectedUser.Id</p>
+        <p><strong>Username:</strong> @selectedUser.Username</p>
+        <p><strong>Email:</strong> @selectedUser.Email</p>
+        <p><strong>Rola:</strong> @selectedUser.RoleLevel</p>
+    }
+</DetailsModal>
 
 @code {
+    private UserDto[]? users;
+
+    private string currentUserName = "";
     
+    private UserDto newUser = new();
+    private UserDto editingUser = new();
+    private UserDto? selectedUser;
+
+    private bool showEditModal = false;
+    private bool showDetailsModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            if (userData == null || (int)userData.RoleLevel < 3)
+            {
+                Nav.NavigateTo("/home");
+                return;
+            }
+            // await LoadUsers();
+        }
+        catch
+        {
+            Nav.NavigateTo("/");
+        }
+    }
+
+    private async Task LoadUsers()
+    {
+        users = await Http.GetFromJsonAsync<UserDto[]>("/api/users/get_all");
+    }
+    
+    private async Task ShowDetails(UserDto user)
+    {
+        showDetailsModal = true;
+        var requestBody = new { Id = user.Id };
+        var response = await Http.PostAsJsonAsync($"/api/users/get_detail", requestBody);
+        if (response.IsSuccessStatusCode)
+        {
+            selectedUser = await response.Content.ReadFromJsonAsync<UserDto>();
+        }
+    }
+
+    private async Task AddUser()
+    {
+        var response = await Http.PostAsJsonAsync("/api/users/add", newUser);
+        if (response.IsSuccessStatusCode)
+        {
+            newUser = new UserDto();
+            await LoadUsers();
+        }
+        else
+        {
+            Console.WriteLine($"Error adding a user: {response.StatusCode}");
+        }
+    }
+
+    private async Task DeleteUser(UserDto user)
+    {
+        var requestBody = new { Id = user.Id };
+        
+        var response = await Http.PostAsJsonAsync($"/api/users/delete", requestBody);
+        if (response.IsSuccessStatusCode)
+        {
+            await LoadUsers();
+        }
+        else
+        {
+            Console.WriteLine($"Error deleting a service: {response.StatusCode}");
+        }
+    }
+
+   
+
+    private void OpenEditModal(UserDto user)
+    {
+        editingUser = new UserDto
+        {
+            Id = user.Id,
+            Username = user.Username,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Email = user.Email,
+            RoleLevel = user.RoleLevel
+        };
+        showEditModal = true;
+    }
+
+    private async Task SaveEdit()
+    {
+        var response = await Http.PostAsJsonAsync("/api/users/edit", editingUser);
+        if (response.IsSuccessStatusCode)
+        {
+            showEditModal = false;
+            await LoadUsers();
+        }
+    }
 }

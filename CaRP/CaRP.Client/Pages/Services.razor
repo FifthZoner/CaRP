@@ -2,6 +2,7 @@
 @using CaRP.Shared.Dtos
 @using CaRP.Client.Components
 @inject HttpClient Http
+@inject NavigationManager Nav
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
 <PageTitle>Serwisy Pojazdów</PageTitle>
@@ -160,8 +161,21 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadServicings();
-        await LoadCurrentUser();
+        try
+        {
+            var userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            if (userData == null || (int)userData.RoleLevel < 2)
+            {
+                Nav.NavigateTo("/home");
+                return;
+            }
+            await LoadCurrentUser();
+            // await LoadServicings();
+        }
+        catch
+        {
+            Nav.NavigateTo("/");
+        }
     }
 
     private async Task LoadCurrentUser()

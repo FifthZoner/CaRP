@@ -38,13 +38,17 @@ public static partial class Endpoints
         });
     }
 
-    public static RoleEnum? GetRole(ClaimsPrincipal user)
+    public static RoleEnum? GetRole(string? role)
     {
-        var role = user.FindFirst("role_enum_value")?.Value;
         if (!int.TryParse(role, out var roleLevel))
         // by default let's put in that the user is a driver, reduces the need for messing around in clerk dashboard
             return RoleEnum.Driver;
         return (RoleEnum)roleLevel;
+    }
+
+    public static RoleEnum? GetRole(ClaimsPrincipal user)
+    {
+        return GetRole(user.FindFirst("role_enum_value")?.Value);
     }
 
     public static bool IsAtLeast(this ClaimsPrincipal user, RoleEnum atLeastRole)
@@ -91,6 +95,9 @@ public static partial class Endpoints
 
     public static bool CanWrite(this ClaimsPrincipal user, in Perms permissions, in string dtoLogin)
     {
+        if (string.IsNullOrWhiteSpace(dtoLogin))
+            return false;
+
         if (user.HasAll(Perms.Services.CanFullAll))
             return true;
 
@@ -102,6 +109,9 @@ public static partial class Endpoints
 
     public static bool CanRead(this ClaimsPrincipal user, in Perms permissions, in string dtoLogin)
     {
+        if (string.IsNullOrWhiteSpace(dtoLogin))
+            return false;
+
         if (user.HasAll(Perms.Services.CanReadAll))
             return true;
 

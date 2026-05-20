@@ -63,7 +63,6 @@ public partial class Endpoints
 
     private static async Task<IResult> ServiceEdit(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] ServicingDto dto, [FromServices] IMapper mapper)
     {
-
         var entity = await db.Services.FindAsync(dto.Id);
         if (entity == null) return Results.NotFound();
         mapper.Map(dto, entity);

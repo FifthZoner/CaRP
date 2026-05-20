@@ -125,7 +125,7 @@
                 Nav.NavigateTo("/home");
                 return;
             }
-            // await LoadUsers();
+            await LoadUsers();
         }
         catch
         {
@@ -141,12 +141,14 @@
     private async Task ShowDetails(UserDto user)
     {
         showDetailsModal = true;
-        var requestBody = new { Id = user.Id };
+        var requestBody = new GetClerkDetailDto{ Id = user.Id };
         var response = await Http.PostAsJsonAsync($"/api/users/get_detail", requestBody);
         if (response.IsSuccessStatusCode)
         {
             selectedUser = await response.Content.ReadFromJsonAsync<UserDto>();
         }
+        else
+            showDetailsModal = false;
     }
 
     private async Task AddUser()

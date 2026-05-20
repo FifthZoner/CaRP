@@ -13,7 +13,7 @@ public static partial class Endpoints
         // testing
         api.MapGet("/test", () => Results.Ok(new { Message = "Backend works!" }));
 
-        api.MapGet("/user/login_details",   LoginDetails)     .RequireAuthorization();
+        api.MapGet ("/user/login_details",  LoginDetails)     .RequireAuthorization();
 
         api.MapGet ("/vehicles/get_all",    VehiclesGetAll)   .RequireAuthorization();
         api.MapPost("/vehicles/get_detail", VehiclesGetDetail).RequireAuthorization();
@@ -32,6 +32,10 @@ public static partial class Endpoints
         api.MapPost("/service/add",         ServiceAdd)       .RequireAuthorization();
         api.MapPost("/service/edit",        ServiceEdit)      .RequireAuthorization();
         api.MapPost("/service/delete",      ServiceDelete)    .RequireAuthorization();
+
+        api.MapGet ("/users/get_all",       UsersGetAll)      .RequireAuthorization();
+        api.MapPost("/users/get_detail",    UsersGetDetail)   .RequireAuthorization();
+        api.MapPost("/users/edit",          UsersEdit)        .RequireAuthorization();
     }
 
 

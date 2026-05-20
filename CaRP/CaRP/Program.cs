@@ -59,6 +59,11 @@ public static void Main(string[] args)
 
     builder.Services.AddAutoMapper(cfg => {}, typeof(Program));
 
+    builder.Services.AddClerkApiClient(config =>
+    {
+        config.SecretKey = Endpoints.Secrets.SecretKey;
+    });
+
     var app = builder.Build();
 
     if (app.Environment.IsDevelopment())

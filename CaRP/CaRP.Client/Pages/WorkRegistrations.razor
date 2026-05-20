@@ -3,6 +3,7 @@
 @using CaRP.Shared.Dtos
 @using CaRP.Client.Components
 @inject HttpClient Http
+@inject NavigationManager Nav
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 
 <PageTitle>Karty pracy</PageTitle>
@@ -150,6 +151,7 @@
 @code {
     private WorkRegistrationDto[]? works;
     
+    private LoginInfoDto? userData;
     private string currentUserName = "";
     
     private WorkRegistrationDto newWork = new() { WorkDate = DateTime.Now };
@@ -161,16 +163,29 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadWorks();
-        await LoadCurrentUser();
+        try
+        {
+            userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            
+            if (userData == null)
+            {
+                Nav.NavigateTo("/");
+            }
+            await LoadWorks();
+            await LoadCurrentUser();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unauthorized, redirecting: {ex.Message}");
+            Nav.NavigateTo("/");
+        }
+        
     }
     
     private async Task LoadCurrentUser()
     {
         try
         {
-            var userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
-            
             if (userData != null && !string.IsNullOrEmpty(userData.Username))
             {
                 currentUserName = userData.Username;

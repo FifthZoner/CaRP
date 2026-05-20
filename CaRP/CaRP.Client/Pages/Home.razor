@@ -1,7 +1,7 @@
 ﻿@page "/home"
 @using CaRP.Shared.Dtos
 @using carp.Shared.Enums
-@rendermode InteractiveWebAssembly
+@rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
 @inject HttpClient Http
 @inject NavigationManager Nav
 
@@ -70,10 +70,16 @@
         try
         {
             userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            
+            if (userData == null)
+            {
+                Nav.NavigateTo("/");
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading user profile: {ex.Message}");
+            Console.WriteLine($"Unauthorized, redirecting: {ex.Message}");
+            Nav.NavigateTo("/");
         }
     }
 }

@@ -43,7 +43,7 @@ public partial class Endpoints
             config.QueryParameters.UserId = [getDetailDto.Id];
         });
 
-        if (users == null || users.Count != 1)
+        if (users is not { Count: 1 })
             return Results.NotFound();
 
         return Results.Ok(ClerkUserToDto(users.First()));
@@ -59,7 +59,7 @@ public partial class Endpoints
             config.QueryParameters.UserId = [dto.Id];
         });
 
-        if (users == null || users.Count != 1)
+        if (users is not { Count: 1 })
             return Results.NotFound();
 
         var metadataPayload = new WithUser_PatchRequestBody()
@@ -82,7 +82,35 @@ public partial class Endpoints
             return Results.InternalServerError();
         }
 
-        return Results.Ok(new { Message = "Modified", Id = dto.Id });
+        return Results.Ok((Message: "Modified", Id: dto.Id));
+    }
+
+    private static async Task<IResult> UsersDelete(ClaimsPrincipal user, [FromBody] GetClerkDetailDto dto, [FromServices] ClerkApiClient clerkClient)
+    {
+        if (!user.HasAll(Perms.Users.CanFullAll, Perms.Users.CanFullOwn))
+            return Results.Unauthorized();
+
+        var users = await clerkClient.Users.GetAsync(config =>
+        {
+            config.QueryParameters.UserId = [dto.Id];
+        });
+
+        if (users is not { Count: 1 })
+            return Results.NotFound();
+
+        if (users.First().Username == user.Login())
+            return Results.Problem("Thou shall not delete thyself");
+
+        try
+        {
+            clerkClient.Users[dto.Id].DeleteAsync().Wait();
+        }
+        catch
+        {
+            return Results.InternalServerError();
+        }
+
+        return Results.Ok((Message: "Deleted", Id: dto.Id));
     }
 
     private static UserDto ClerkUserToDto(User u)

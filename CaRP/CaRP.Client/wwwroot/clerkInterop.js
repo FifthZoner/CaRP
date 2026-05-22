@@ -17,6 +17,10 @@ window.clerkInterop = {
     openSignIn: async () => {
         Clerk.openSignIn();
     },
+    
+    openSignUp: async () => {
+        Clerk.openSignUp();
+    },
 
     getAccessToken: async function () {
         await this.init();
@@ -29,7 +33,12 @@ window.clerkInterop = {
         },
 
     logout: async () => {
-        await Clerk.signOut();
+        
+        if (!window.Clerk || !window.Clerk.session) {
+            console.error("Clerk script not loaded yet.");
+        }
+        await window.Clerk.signOut();
+        console.log("Logged out of clerk succesfully.");
     }
 };
 

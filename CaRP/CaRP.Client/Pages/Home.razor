@@ -35,19 +35,30 @@
                                 <span class="badge bg-info text-dark rounded-pill fs-6 px-3">@userData.RoleLevel</span>
                             </div>
                         </div>
-
+                        
                         <div class="d-grid gap-3 mt-4">
-                            <a href="/WorkRegistrations" class="btn btn-success btn-lg shadow-sm">
-                                <i class="bi bi-clipboard-data me-2"></i> Przejdź do Kart Pracy
-                            </a>
                             
+                            @if ((int)userData.RoleLevel < 1)
+                            {
+                                <a href="/" class="btn btn-success btn-lg shadow-sm">
+                                    <i class="bi bi-clipboard-data me-2"></i> Poproś administratora o dostęp
+                                </a>
+                            }
+                            
+                            @if ((int)userData.RoleLevel >= 1)
+                            {
+                                <a href="/WorkRegistrations" class="btn btn-success btn-lg shadow-sm">
+                                    <i class="bi bi-clipboard-data me-2"></i> Przejdź do Kart Pracy
+                                </a>
+                            }
+
                             @if ((int)userData.RoleLevel >= 2)
                             {
                                 <a href="/vehicles" class="btn btn-outline-secondary">
                                     <i class="bi bi-truck me-2"></i> Przeglądaj pojazdy
                                 </a>
                             }
-                            
+
                             @if ((int)userData.RoleLevel == 3)
                             {
                                 <a href="/users" class="btn btn-outline-secondary">

@@ -27,7 +27,7 @@
     }
     else if (isLoggedIn)
     {
-        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+        <div class="d-grid gap-3 mt-5">
             <a href="/home" class="btn btn-primary btn-lg px-5 shadow">
                 <i class="bi bi-house-door me-2"></i> Przejdź do panelu użytkownika
             </a>
@@ -36,9 +36,9 @@
             </button>
         </div>
     }
-    else
+    else 
     {
-        <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+        <div class="d-flex flex-column align-items-center gap-3 mt-4">
             <button class="btn btn-primary btn-lg px-5 shadow" @onclick="HandleLogin">
                 <i class="bi bi-box-arrow-in-right me-2"></i> Zaloguj się
             </button>
@@ -75,12 +75,29 @@
     }
 
     private async Task HandleLogin() => await JSRuntime.InvokeVoidAsync("clerkInterop.openSignIn");
-    private async Task HandleSignUp() => await JSRuntime.InvokeVoidAsync("clerkInterop.openSignUp");
+
+    private async Task HandleSignUp()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("clerkInterop.openSignUp");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Sign up error: {ex.Message}");
+        }
+    } 
     
     private async Task HandleLogout()
     {
-        await JSRuntime.InvokeVoidAsync("clerkInterop.signOut");
-        isLoggedIn = false;
-        StateHasChanged();
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("clerkInterop.logout");
+            Nav.NavigateTo("/", forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error while logging out: {ex.Message}");
+        }
     }
 }

@@ -1,11 +1,12 @@
 @typeparam TItem
 @using CaRP.Client.Components
 
-<div class="card border-primary mb-4">
-    <div class="card-header bg-primary text-white">@FormTitle</div>
-    <div class="card-body">
-        @if (NewItem != null)
-        {
+@if (NewItem != null)
+{
+    <div class="card border-primary mb-4">
+        <div class="card-header bg-primary text-white">@FormTitle</div>
+        <div class="card-body">
+
             <EditForm Model="NewItem" OnValidSubmit="OnSave">
                 <div class="row g-3">
                     @FormFields
@@ -16,9 +17,10 @@
                     </div>
                 </div>
             </EditForm>
-        }
+
+        </div>
     </div>
-</div>
+}
 
 @if (Items == null)
 {

@@ -12,36 +12,12 @@
 
 <PageTemplate TItem="UserDto" 
               Items="users" 
-              NewItem="newUser"
-              OnSave="AddUser"
               OnDelete="DeleteUser"
               OnDetails="ShowDetails"
               OnEdit="OpenEditModal"
-              FormTitle="Dodaj nowego użytkownika"
-              ButtonLabel="Zapisz"
               Context="user">
 
-    <FormFields>
-        <div class="col-md-3">
-            <label class="form-label font-weight-bold">Nazwa użytkownika</label>
-            <InputText class="form-control" @bind-Value="newUser.Username" required />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label font-weight-bold">Email</label>
-            <InputText type="email" class="form-control" @bind-Value="newUser.Email" required />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label font-weight-bold">Rola</label>
-            <InputSelect class="form-select" @bind-Value="newUser.RoleLevel">
-                @foreach (var role in Enum.GetValues<RoleEnum>())
-                {
-                    <option value="@role">@role</option>
-                }
-            </InputSelect>
-        </div>
-    </FormFields>
-
-    <TableHeader>
+       <TableHeader>
         <th>Username</th>
         <th>Imię i Nazwisko</th>
         <th>Email</th>
@@ -108,7 +84,6 @@
 
     private string currentUserName = "";
     
-    private UserDto newUser = new();
     private UserDto editingUser = new();
     private UserDto? selectedUser;
 
@@ -151,20 +126,6 @@
             showDetailsModal = false;
     }
 
-    private async Task AddUser()
-    {
-        var response = await Http.PostAsJsonAsync("/api/users/add", newUser);
-        if (response.IsSuccessStatusCode)
-        {
-            newUser = new UserDto();
-            await LoadUsers();
-        }
-        else
-        {
-            Console.WriteLine($"Error adding a user: {response.StatusCode}");
-        }
-    }
-
     private async Task DeleteUser(UserDto user)
     {
         var requestBody = new { Id = user.Id };
@@ -179,8 +140,6 @@
             Console.WriteLine($"Error deleting a service: {response.StatusCode}");
         }
     }
-
-   
 
     private void OpenEditModal(UserDto user)
     {

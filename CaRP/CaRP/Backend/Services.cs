@@ -16,11 +16,11 @@ public partial class Endpoints
     private static async Task<IResult> ServiceGetAll(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromServices] IMapper mapper)
     {
         if (user.Has(Perms.Services.CanReadAll))
-            return Results.Ok(await db.Services
+            return Results.Ok(await db.Servicing
                 .ProjectTo<ServicingDto>(mapper.ConfigurationProvider)
                 .ToListAsync());
         if (user.Has(Perms.Services.CanReadOwn))
-            return Results.Ok(await db.Services
+            return Results.Ok(await db.Servicing
                 .Where(x => x.ClerkUsername == user.Login())
                 .ProjectTo<ServicingDto>(mapper.ConfigurationProvider)
                 .ToListAsync());
@@ -29,7 +29,7 @@ public partial class Endpoints
 
     private static async Task<IResult> ServiceGetDetail(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] GetDetailDto getDetailDto, [FromServices] IMapper mapper)
     {
-        var dto = await db.Services
+        var dto = await db.Servicing
             .ProjectTo<ServicingDto>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync(x => x.Id == getDetailDto.Id);
 
@@ -55,7 +55,7 @@ public partial class Endpoints
             return Results.NotFound("Invalid vehicle id");
         entity.Vehicle = vehicle;
 
-        db.Services.Add(entity);
+        db.Servicing.Add(entity);
         await db.SaveChangesAsync();
 
         return Results.Ok(new { Message = "Added", Id = entity.Id });
@@ -63,7 +63,7 @@ public partial class Endpoints
 
     private static async Task<IResult> ServiceEdit(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] ServicingDto dto, [FromServices] IMapper mapper)
     {
-        var entity = await db.Services.FindAsync(dto.Id);
+        var entity = await db.Servicing.FindAsync(dto.Id);
         if (entity == null) return Results.NotFound();
         mapper.Map(dto, entity);
 
@@ -82,14 +82,14 @@ public partial class Endpoints
 
     private static async Task<IResult> ServiceDelete(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] GetDetailDto getDetailDto)
     {
-        var entity = await db.Services.FindAsync(getDetailDto.Id);
+        var entity = await db.Servicing.FindAsync(getDetailDto.Id);
         if (entity == null)
             return Results.NotFound();
 
         if (!user.CanWrite(Perms.Services, entity.ClerkUsername))
             return Results.Unauthorized();
 
-        db.Services.Remove(entity);
+        db.Servicing.Remove(entity);
         await db.SaveChangesAsync();
 
         return Results.Ok(new { Message = "Deleted", Id = getDetailDto.Id });

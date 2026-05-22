@@ -36,6 +36,7 @@ public static partial class Endpoints
         api.MapGet ("/users/get_all",       UsersGetAll)      .RequireAuthorization();
         api.MapPost("/users/get_detail",    UsersGetDetail)   .RequireAuthorization();
         api.MapPost("/users/edit",          UsersEdit)        .RequireAuthorization();
+        api.MapPost("/users/delete",        UsersDelete)      .RequireAuthorization();
     }
 
 

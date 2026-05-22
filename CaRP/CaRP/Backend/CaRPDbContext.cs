@@ -6,7 +6,7 @@ namespace CaRP.Backend;
 public class CaRpDbContext(DbContextOptions<CaRpDbContext> options) : DbContext(options)
 {
     public DbSet<Vehicle> Vehicles { get; set; }
-    public DbSet<Servicing> Services { get; set; }
+    public DbSet<Servicing> Servicing { get; set; }
     public DbSet<WorkRegistration> WorkRegistrations { get; set; }
 }
 

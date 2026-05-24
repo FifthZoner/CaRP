@@ -74,13 +74,13 @@
 </div>
 
 @code {
-    private LoginInfoDto? userData;
+    private UserDto? userData;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            userData = await Http.GetFromJsonAsync<UserDto>("user/login_details");
             
             if (userData == null)
             {

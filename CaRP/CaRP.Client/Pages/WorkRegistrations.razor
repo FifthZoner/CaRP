@@ -149,7 +149,7 @@
 @code {
     private WorkRegistrationDto[]? works;
     
-    private LoginInfoDto? userData;
+    private UserDto? userData;
     private string currentUserName = "";
     
     private WorkRegistrationDto newWork = new() { WorkDate = DateTime.Now };
@@ -163,7 +163,7 @@
     {
         try
         {
-            userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            userData = await Http.GetFromJsonAsync<UserDto>("user/login_details");
             
             if (userData == null)
             {

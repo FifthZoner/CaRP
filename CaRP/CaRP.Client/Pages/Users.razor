@@ -2,6 +2,7 @@
 @using CaRP.Shared.Dtos
 @using CaRP.Client.Components
 @using carp.Shared.Enums
+@using carp.Shared.Utils
 @inject HttpClient Http
 @inject NavigationManager Nav
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
@@ -18,10 +19,10 @@
               Context="user">
 
        <TableHeader>
-        <th>Username</th>
-        <th>Imię i Nazwisko</th>
-        <th>Email</th>
-        <th>Rola</th>
+        <th>@Names.GetName((UserDto x) => x.Username)</th>
+        <th>@Names.GetName((UserDto x) => x.FirstName) i @Names.GetName((UserDto x) => x.LastName)</th>
+        <th>@Names.GetName((UserDto x) => x.Email)</th>
+        <th>@(Names.GetName<UserDto>(nameof(UserDto.RoleLevel)))</th>
     </TableHeader>
 
     <TableRow>
@@ -40,15 +41,15 @@
     <EditForm Model="editingUser" OnValidSubmit="SaveEdit">
         <div class="row g-3">
             <div class="col-md-6">
-                <label class="form-label font-weight-bold">Imię</label>
+                <label class="form-label font-weight-bold">@Names.GetName((UserDto x) => x.FirstName)</label>
                 <InputText class="form-control" @bind-Value="editingUser.FirstName" />
             </div>
             <div class="col-md-6">
-                <label class="form-label font-weight-bold">Nazwisko</label>
+                <label class="form-label font-weight-bold">@Names.GetName((UserDto x) => x.LastName)</label>
                 <InputText class="form-control" @bind-Value="editingUser.LastName" />
             </div>
             <div class="col-md-12">
-                <label class="form-label font-weight-bold">Rola w systemie</label>
+                <label class="form-label font-weight-bold">@(Names.GetName<UserDto>(nameof(UserDto.RoleLevel))) w systemie</label>
                 <InputSelect class="form-select" @bind-Value="editingUser.RoleLevel">
                     @foreach (var role in Enum.GetValues<RoleEnum>())
                     {
@@ -72,10 +73,10 @@
     }
     else
     {
-        <p><strong>ID Clerka:</strong> @selectedUser.Id</p>
-        <p><strong>Username:</strong> @selectedUser.Username</p>
-        <p><strong>Email:</strong> @selectedUser.Email</p>
-        <p><strong>Rola:</strong> @selectedUser.RoleLevel</p>
+        <p><strong>@Names.GetName((UserDto x) => x.Id):</strong> @selectedUser.Id</p>
+        <p><strong>@Names.GetName((UserDto x) => x.Username):</strong> @selectedUser.Username</p>
+        <p><strong>@Names.GetName((UserDto x) => x.Email):</strong> @selectedUser.Email</p>
+        <p><strong>@(Names.GetName<UserDto>(nameof(UserDto.RoleLevel))):</strong> @selectedUser.RoleLevel</p>
     }
 </DetailsModal>
 
@@ -94,7 +95,7 @@
     {
         try
         {
-            var userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            var userData = await Http.GetFromJsonAsync<UserDto>("user/login_details");
             if (userData == null || (int)userData.RoleLevel < 3)
             {
                 Nav.NavigateTo("/home");

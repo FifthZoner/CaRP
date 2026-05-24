@@ -8,32 +8,27 @@ using CaRP.Shared.Dtos;
 using carp.Shared.Enums;
 using carp.Shared.Permissions;
 using Clerk.Net.Client;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CaRP.Backend;
 
 public static partial class Endpoints
 {
-    private static async Task<IResult> LoginDetails(ClaimsPrincipal user)
+    private static async Task<IResult> LoginDetails(ClaimsPrincipal user, [FromServices] ClerkApiClient clerkClient)
     {
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrWhiteSpace(userId))
+            return Results.InternalServerError("Could not find user id");
 
-        using var client = new HttpClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", Secrets.SecretKey);
-
-        var clerkUser = await client.GetFromJsonAsync<ClerkUserResponse>($"https://api.clerk.com/v1/users/{userId}");
-
-        if (clerkUser == null)
-            return Results.InternalServerError("Could not find clerk user");
-
-        var role = GetRole(user);
-
-        return Results.Ok(new LoginInfoDto() {
-            Username = user.FindFirst("login")?.Value ?? "",
-            ImageUrl = clerkUser.ImageUrl ?? null,
-            RoleLevel = role,
-            FirstName = clerkUser.FirstName,
-            LastName = clerkUser.LastName
+        var users = await clerkClient.Users.GetAsync(config =>
+        {
+            config.QueryParameters.UserId = [userId];
         });
+
+        if (users is not { Count: 1 })
+            return Results.NotFound();
+
+        return Results.Ok(ClerkUserToDto(users.First()));
     }
 
     public static RoleEnum GetRole(string? role)

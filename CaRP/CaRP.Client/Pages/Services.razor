@@ -161,7 +161,7 @@
     {
         try
         {
-            var userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            var userData = await Http.GetFromJsonAsync<UserDto>("user/login_details");
             if (userData == null || (int)userData.RoleLevel < 2)
             {
                 Nav.NavigateTo("/home");
@@ -180,7 +180,7 @@
     {
         try
         {
-            var userData = await Http.GetFromJsonAsync<LoginInfoDto>("user/login_details");
+            var userData = await Http.GetFromJsonAsync<UserDto>("user/login_details");
             
             if (userData != null && !string.IsNullOrEmpty(userData.Username))
             {

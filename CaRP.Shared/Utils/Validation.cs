@@ -85,7 +85,7 @@ public static class Validation
             {
                 var result = v.Check(prop.GetValue(dto));
                 if (result != null)
-                    return $"{prop.Name}: {result}";
+                    return $"{Names.GetName<T>(prop.Name)}: {result}";
             }
         }
         return null;

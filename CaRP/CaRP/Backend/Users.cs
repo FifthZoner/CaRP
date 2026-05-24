@@ -112,7 +112,7 @@ public partial class Endpoints
             return Results.NotFound();
 
         if (users.First().Username == user.Login())
-            return Results.Problem("Thou shall not delete thyself");
+            return Results.Problem("Ejże nie usuwajcie sami siebie Towarzysze");
 
         try
         {

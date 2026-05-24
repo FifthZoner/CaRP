@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
 
@@ -80,14 +81,56 @@ public static class Validation
             if (skipIdFields && prop.Name.EndsWith("Id"))
                 continue;
 
-            var attr = prop.GetCustomAttribute(typeof(ValidationMethod), true);
-            if (attr is not null && attr is ValidationMethod v)
-            {
-                var result = v.Check(prop.GetValue(dto));
-                if (result != null)
-                    return $"{Names.GetName<T>(prop.Name)}: {result}";
-            }
+            var result = Check(dto, prop.Name);
+            if (result != null)
+                return $"{Names.GetName<T>(prop.Name)}: {result}";
         }
         return null;
+    }
+
+    public static string? Check<T>(T dto, Expression<Func<T, object>> expression)
+    {
+        return Check(dto, GetPropertyName(expression));
+    }
+
+    public static string? Check<T>(T dto, string propertyName)
+    {
+        var attribute = GetAttribute<T>(propertyName);
+        if (attribute is ValidationMethod v)
+        {
+            var prop = typeof(T).GetProperty(propertyName);
+            if (prop == null)
+                return null;
+            var result = v.Check(prop.GetValue(dto));
+            if (result != null)
+                return $"{Names.GetName<T>(prop.Name)}: {result}";
+        }
+        return null;
+    }
+
+
+
+    // tutaj już magia C#'owa, niepotrzebne do szczęścia na froncie
+    private static Attribute? GetAttribute<T>(string propName)
+    {
+        var property = typeof(T).GetProperty(propName);
+        if (property == null)
+            return null;
+        return property.GetCustomAttribute(typeof(ValidationMethod), true);
+    }
+    private static Attribute? GetAttribute<T>(Expression<Func<T, object>> expression)
+    {
+        return GetAttribute<T>(GetPropertyName(expression));
+    }
+    private static string GetPropertyName<T>(Expression<Func<T, object>> expression)
+    {
+        try
+        {
+            return ((MemberExpression)expression.Body).Member.Name ?? "";
+        }
+        catch
+        {
+            return "";
+        }
     }
 }

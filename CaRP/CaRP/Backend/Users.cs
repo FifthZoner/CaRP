@@ -8,6 +8,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using CaRP.Shared.Models;
 using carp.Shared.Permissions;
+using carp.Shared.Utils;
 using Clerk.Net.Client;
 using Clerk.Net.Client.Models;
 using Clerk.Net.Client.Users.Item;
@@ -38,6 +39,10 @@ public partial class Endpoints
         if (!user.HasAll(Perms.Users.CanReadAll, Perms.Users.CanReadOwn))
             return Results.Unauthorized();
 
+        var check = Validation.Check(getDetailDto);
+        if (check != null)
+            return Results.BadRequest(check);
+
         var users = await clerkClient.Users.GetAsync(config =>
         {
             config.QueryParameters.UserId = [getDetailDto.Id];
@@ -53,6 +58,10 @@ public partial class Endpoints
     {
         if (!user.HasAll(Perms.Users.CanFullAll, Perms.Users.CanFullOwn))
             return Results.Unauthorized();
+
+        var check = Validation.Check(dto);
+        if (check != null)
+            return Results.BadRequest(check);
 
         var users = await clerkClient.Users.GetAsync(config =>
         {
@@ -89,6 +98,10 @@ public partial class Endpoints
     {
         if (!user.HasAll(Perms.Users.CanFullAll, Perms.Users.CanFullOwn))
             return Results.Unauthorized();
+
+        var check = Validation.Check(dto);
+        if (check != null)
+            return Results.BadRequest(check);
 
         var users = await clerkClient.Users.GetAsync(config =>
         {
@@ -131,7 +144,7 @@ public partial class Endpoints
             Email = email,
             FirstName = u.FirstName ?? "",
             LastName = u.LastName ?? "",
-            RoleLevel = GetRole(role) ?? RoleEnum.Unset
+            RoleLevel = GetRole(role)
         };
     }
 }

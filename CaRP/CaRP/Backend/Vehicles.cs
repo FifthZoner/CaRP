@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using CaRP.Shared.Models;
+using carp.Shared.Utils;
 
 namespace CaRP.Backend;
 
@@ -25,6 +26,10 @@ public partial class Endpoints
         if (user.IsNotAtLeast(RoleEnum.Manager))
             return Results.Unauthorized();
 
+        var check = Validation.Check(getDetailDto);
+        if (check != null)
+            return Results.BadRequest(check);
+
         var vehicle = await db.Vehicles.FindAsync(getDetailDto.Id);
 
         if (vehicle == null)
@@ -38,14 +43,16 @@ public partial class Endpoints
         if (user.IsNotAtLeast(RoleEnum.Manager))
             return Results.Unauthorized();
 
+        var check = Validation.Check(dto, true);
+        if (check != null)
+            return Results.BadRequest(check);
+
         var vehicle = mapper.Map<Vehicle>(dto);
 
         if (vehicle == null)
             return Results.BadRequest();
 
         vehicle.Id = 0;
-
-        // TODO: sprawdzenia
 
         db.Vehicles.Add(vehicle);
         await db.SaveChangesAsync();
@@ -58,13 +65,15 @@ public partial class Endpoints
         if (user.IsNotAtLeast(RoleEnum.Manager))
             return Results.Unauthorized();
 
+        var check = Validation.Check(dto);
+        if (check != null)
+            return Results.BadRequest(check);
+
         var vehicle = await db.Vehicles.FindAsync(dto.Id);
         if (vehicle == null)
             return Results.NotFound();
 
         mapper.Map(dto, vehicle);
-
-        // TODO: sprawdzenia
 
         await db.SaveChangesAsync();
 
@@ -76,6 +85,10 @@ public partial class Endpoints
     {
         if (user.IsNotAtLeast(RoleEnum.Manager))
             return Results.Unauthorized();
+
+        var check = Validation.Check(getDetailDto);
+        if (check != null)
+            return Results.BadRequest(check);
 
         var vehicle = await db.Vehicles.FindAsync(getDetailDto.Id);
 

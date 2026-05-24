@@ -8,6 +8,7 @@ using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using CaRP.Shared.Models;
 using carp.Shared.Permissions;
+using carp.Shared.Utils;
 
 namespace CaRP.Backend;
 
@@ -29,6 +30,10 @@ public partial class Endpoints
 
     private static async Task<IResult> ServiceGetDetail(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] GetDetailDto getDetailDto, [FromServices] IMapper mapper)
     {
+        var check = Validation.Check(getDetailDto);
+        if (check != null)
+            return Results.BadRequest(check);
+
         var dto = await db.Servicing
             .ProjectTo<ServicingDto>(mapper.ConfigurationProvider)
             .FirstOrDefaultAsync(x => x.Id == getDetailDto.Id);
@@ -47,6 +52,10 @@ public partial class Endpoints
         if (!user.CanWrite(Perms.Services, dto.ClerkUsername))
             return Results.Unauthorized();
 
+        var check = Validation.Check(dto, true);
+        if (check != null)
+            return Results.BadRequest(check);
+
         var entity = mapper.Map<Servicing>(dto);
         entity.Id = 0;
 
@@ -63,6 +72,10 @@ public partial class Endpoints
 
     private static async Task<IResult> ServiceEdit(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] ServicingDto dto, [FromServices] IMapper mapper)
     {
+        var check = Validation.Check(dto);
+        if (check != null)
+            return Results.BadRequest(check);
+
         var entity = await db.Servicing.FindAsync(dto.Id);
         if (entity == null) return Results.NotFound();
         mapper.Map(dto, entity);
@@ -82,6 +95,10 @@ public partial class Endpoints
 
     private static async Task<IResult> ServiceDelete(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] GetDetailDto getDetailDto)
     {
+        var check = Validation.Check(getDetailDto);
+        if (check != null)
+            return Results.BadRequest(check);
+
         var entity = await db.Servicing.FindAsync(getDetailDto.Id);
         if (entity == null)
             return Results.NotFound();

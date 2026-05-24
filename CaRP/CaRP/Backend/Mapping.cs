@@ -26,6 +26,10 @@ public partial class Endpoints
                 .ReverseMap();
 
             CreateMap<Servicing, ServicingDto>()
+                .ForMember(dest => dest.RegistrationNumber,
+                    opt => opt.MapFrom(src => src.Vehicle.RegistrationNumber))
+                .ForMember(dest => dest.Vin,
+                    opt => opt.MapFrom(src => src.Vehicle.Vin))
                 .ReverseMap();
         }
     }

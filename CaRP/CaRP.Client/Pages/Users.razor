@@ -18,11 +18,11 @@
               OnEdit="OpenEditModal"
               Context="user">
 
-       <TableHeader>
+    <TableHeader>
         <th>@Names.GetName((UserDto x) => x.Username)</th>
         <th>@Names.GetName((UserDto x) => x.FirstName) i @Names.GetName((UserDto x) => x.LastName)</th>
         <th>@Names.GetName((UserDto x) => x.Email)</th>
-        <th>@(Names.GetName<UserDto>(nameof(UserDto.RoleLevel)))</th>
+        <th>@Names.GetName((UserDto x) => x.RoleLevel)</th>
     </TableHeader>
 
     <TableRow>

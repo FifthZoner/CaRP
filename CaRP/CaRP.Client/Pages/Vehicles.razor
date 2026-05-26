@@ -1,6 +1,7 @@
 @page "/vehicles"
 @using CaRP.Shared.Dtos
 @using CaRP.Client.Components
+@using carp.Shared.Utils
 @inject HttpClient Http
 @inject NavigationManager Nav
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
@@ -20,42 +21,51 @@
               Context="vehicle">
     
     <FormFields>
+        @if (!string.IsNullOrEmpty(addErrorMessage))
+        {
+            <div class="col-12 mb-3">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @addErrorMessage
+                </div>
+            </div>
+        }
+
         <div class="col-md-3">
-            <label class="form-label">VIN</label>
-            <InputText class="form-control" @bind-Value="newVehicle.Vin" required />
+            <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.Vin)</label>
+            <InputText class="form-control" @bind-Value="newVehicle.Vin" />
         </div>
         <div class="col-md-3">
-            <label class="form-label">Nr Rejestracyjny</label>
-            <InputText class="form-control" @bind-Value="newVehicle.RegistrationNumber" required />
+            <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.RegistrationNumber)</label>
+            <InputText class="form-control" @bind-Value="newVehicle.RegistrationNumber" />
         </div>
         <div class="col-md-3">
-            <label class="form-label">Typ pojazdu</label>
-            <InputText class="form-control" @bind-Value="newVehicle.VehicleType" required />
+            <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.VehicleType)</label>
+            <InputText class="form-control" @bind-Value="newVehicle.VehicleType" />
         </div>
         <div class="col-md-3 d-flex align-items-end">
             <div class="form-check mb-2">
                 <InputCheckbox class="form-check-input" id="isCompany" @bind-Value="newVehicle.IsOwnedByCompany" />
-                <label class="form-check-label" for="isCompany">Firmowy?</label>
+                <label class="form-check-label font-weight-bold" for="isCompany">@Names.GetName((VehicleDto x) => x.IsOwnedByCompany)</label>
             </div>
         </div>
         <div class="col-md-3">
-            <label class="form-label">Dostępny od</label>
+            <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableFrom)</label>
             <InputDate class="form-control" @bind-Value="newVehicle.AvailableFrom" />
         </div>
         <div class="col-md-3">
-            <label class="form-label">Dostępny do</label>
+            <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableTo)</label>
             <InputDate class="form-control" @bind-Value="newVehicle.AvailableTo" />
         </div>
     </FormFields>
     
     
     <TableHeader>
-        <th>VIN</th>
-        <th>Nr Rejestracyjny</th>
-        <th>Typ pojazdu</th>
-        <th>Dostępny od</th>
-        <th>Dostępny do</th>
-        <th>Firmowy?</th>
+        <th>@Names.GetName((VehicleDto x) => x.Vin)</th>
+        <th>@Names.GetName((VehicleDto x) => x.RegistrationNumber)</th>
+        <th>@Names.GetName((VehicleDto x) => x.VehicleType)</th>
+        <th>@Names.GetName((VehicleDto x) => x.AvailableFrom)</th>
+        <th>@Names.GetName((VehicleDto x) => x.AvailableTo)</th>
+        <th>@Names.GetName((VehicleDto x) => x.IsOwnedByCompany)</th>
     </TableHeader>
 
     <TableRow>
@@ -93,15 +103,15 @@
     {
         <div class="row">
             <div class="col-md-6">
-                <p><strong>ID:</strong> @selectedVehicle.Id</p>
-                <p><strong>Nr Rejestracyjny:</strong> @selectedVehicle.RegistrationNumber</p>
-                <p><strong>VIN:</strong> @selectedVehicle.Vin</p>
-                <p><strong>Typ:</strong> @selectedVehicle.VehicleType</p>
+                <p><strong>@Names.GetName((VehicleDto x) => x.Id):</strong> @selectedVehicle.Id</p>
+                <p><strong>@Names.GetName((VehicleDto x) => x.RegistrationNumber):</strong> @selectedVehicle.RegistrationNumber</p>
+                <p><strong>@Names.GetName((VehicleDto x) => x.Vin):</strong> @selectedVehicle.Vin</p>
+                <p><strong>@Names.GetName((VehicleDto x) => x.VehicleType):</strong> @selectedVehicle.VehicleType</p>
             </div>
             <div class="col-md-6">
-                <p><strong>Firmowy:</strong> @(selectedVehicle.IsOwnedByCompany ? "Tak" : "Nie")</p>
-                <p><strong>Dostępny od:</strong> @(selectedVehicle.AvailableFrom?.ToString("dd.MM.yyyy") ?? "Brak")</p>
-                <p><strong>Dostępny do:</strong> @(selectedVehicle.AvailableTo?.ToString("dd.MM.yyyy") ?? "Brak")</p>
+                <p><strong>@Names.GetName((VehicleDto x) => x.IsOwnedByCompany):</strong> @(selectedVehicle.IsOwnedByCompany ? "Tak" : "Nie")</p>
+                <p><strong>@Names.GetName((VehicleDto x) => x.AvailableFrom):</strong> @(selectedVehicle.AvailableFrom?.ToString("dd.MM.yyyy") ?? "Brak")</p>
+                <p><strong>@Names.GetName((VehicleDto x) => x.AvailableTo):</strong> @(selectedVehicle.AvailableTo?.ToString("dd.MM.yyyy") ?? "Brak")</p>
             </div>
         </div>
     }
@@ -113,31 +123,39 @@
            OnClose="() => showEditModal = false">
     
     <EditForm Model="editingVehicle" OnValidSubmit="SaveEdit">
+        
+        @if (!string.IsNullOrEmpty(editErrorMessage))
+        {
+            <div class="alert alert-danger mb-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> @editErrorMessage
+            </div>
+        }
+
         <div class="row g-3">
             <div class="col-md-6">
-                <label class="form-label font-weight-bold">VIN</label>
-                <InputText class="form-control" @bind-Value="editingVehicle.Vin" required />
+                <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.Vin)</label>
+                <InputText class="form-control" @bind-Value="editingVehicle.Vin" />
             </div>
             <div class="col-md-6">
-                <label class="form-label font-weight-bold">Nr Rejestracyjny</label>
-                <InputText class="form-control" @bind-Value="editingVehicle.RegistrationNumber" required />
+                <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.RegistrationNumber)</label>
+                <InputText class="form-control" @bind-Value="editingVehicle.RegistrationNumber" />
             </div>
             <div class="col-md-6">
-                <label class="form-label font-weight-bold">Typ pojazdu</label>
-                <InputText class="form-control" @bind-Value="editingVehicle.VehicleType" required />
+                <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.VehicleType)</label>
+                <InputText class="form-control" @bind-Value="editingVehicle.VehicleType" />
             </div>
             <div class="col-md-6 d-flex align-items-end">
                 <div class="form-check mb-2">
                     <InputCheckbox class="form-check-input" id="editIsCompany" @bind-Value="editingVehicle.IsOwnedByCompany" />
-                    <label class="form-check-label" for="editIsCompany">Firmowy?</label>
+                    <label class="form-check-label font-weight-bold" for="editIsCompany">@Names.GetName((VehicleDto x) => x.IsOwnedByCompany)</label>
                 </div>
             </div>
             <div class="col-md-6">
-                <label class="form-label font-weight-bold">Dostępny od</label>
+                <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableFrom)</label>
                 <InputDate class="form-control" @bind-Value="editingVehicle.AvailableFrom" />
             </div>
             <div class="col-md-6">
-                <label class="form-label font-weight-bold">Dostępny do</label>
+                <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableTo)</label>
                 <InputDate class="form-control" @bind-Value="editingVehicle.AvailableTo" />
             </div>
 
@@ -160,9 +178,11 @@
     
     private bool showDetailsModal = false;
     private VehicleDto? selectedVehicle = null;
-    
     private bool showEditModal = false;
     private VehicleDto editingVehicle = new();
+    
+    private string? addErrorMessage;
+    private string? editErrorMessage;
     
     protected override async Task OnInitializedAsync()
     {
@@ -203,16 +223,20 @@
     
     private async Task AddVehicle()
     {
-        var response = await Http.PostAsJsonAsync("/api/vehicles/add", newVehicle);
+        // Sprawdzenie walidacji (frontend)
+        addErrorMessage = Validation.Check(newVehicle, skipIdFields: true);
+        if (addErrorMessage != null) return;
 
+        var response = await Http.PostAsJsonAsync("/api/vehicles/add", newVehicle);
         if (response.IsSuccessStatusCode)
         {
+            addErrorMessage = null;
             newVehicle = new VehicleDto();
             await LoadVehicles();
         }
         else
         {
-            Console.WriteLine($"Error adding a vehicle: {response.StatusCode}");
+            addErrorMessage = (await response.Content.ReadAsStringAsync()).Trim('"');
         }
     }
     
@@ -233,16 +257,20 @@
     
     private async Task SaveEdit()
     {
-        var response = await Http.PostAsJsonAsync("/api/vehicles/edit", editingVehicle);
+        // Sprawdzenie walidacji (frontend)
+        editErrorMessage = Validation.Check(editingVehicle);
+        if (editErrorMessage != null) return;
 
+        var response = await Http.PostAsJsonAsync("/api/vehicles/edit", editingVehicle);
         if (response.IsSuccessStatusCode)
         {
+            editErrorMessage = null;
             showEditModal = false;
             await LoadVehicles();
         }
         else
         {
-            Console.WriteLine($"Error editing vehicle: {response.StatusCode}");
+            editErrorMessage = (await response.Content.ReadAsStringAsync()).Trim('"');
         }
     }
     

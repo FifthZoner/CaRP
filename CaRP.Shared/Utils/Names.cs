@@ -38,7 +38,20 @@ public class Names
     {
         try
         {
-            return GetAttribute<T>(((MemberExpression)expression.Body).Member.Name);
+            MemberExpression memberExpr;
+
+            // Sprawdzamy, czy wyrażenie zawiera konwersję na 'object' (typy wartościowe jak int, decimal, DateOnly)
+            if (expression.Body is UnaryExpression unaryExpr)
+            {
+                memberExpr = (MemberExpression)unaryExpr.Operand;
+            }
+            else
+            {
+                // Dla typów referencyjnych (np. string)
+                memberExpr = (MemberExpression)expression.Body;
+            }
+
+            return GetAttribute<T>(memberExpr.Member.Name);
         }
         catch
         {

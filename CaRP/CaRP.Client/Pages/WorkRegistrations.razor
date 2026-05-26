@@ -2,6 +2,7 @@
 @using System.Globalization
 @using CaRP.Shared.Dtos
 @using CaRP.Client.Components
+@using carp.Shared.Utils
 @inject HttpClient Http
 @inject NavigationManager Nav
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
@@ -26,9 +27,17 @@
             <InputText class="form-control" @bind-Value="newWork.ClerkUsername" disabled />
         </div>
         <div class="col-md-4">
-            <label class="form-label font-weight-bold">ID Pojazdu</label>
-            @* TODO: lista rozwijalna *@
-            <InputNumber class="form-control" @bind-Value="newWork.VehicleId" required />
+            <label class="form-label font-weight-bold">Wybierz pojazd</label>
+            <InputSelect class="form-select" @bind-Value="newWork.VehicleId">
+                <option value="0" disabled>-- Wybierz pojazd --</option>
+                @if (availableVehicles != null)
+                {
+                    @foreach (var v in availableVehicles)
+                    {
+                        <option value="@v.Id">@v.RegistrationNumber (VIN: @v.Vin)</option>
+                    }
+                }
+            </InputSelect>
         </div>
         <div class="col-md-4">
             <label class="form-label font-weight-bold">Data pracy</label>
@@ -49,11 +58,11 @@
     </FormFields>
 
     <TableHeader>
-        <th>Nr Rejestracyjny</th>
-        <th>Użytkownik</th>
-        <th>Data</th>
-        <th>Godziny pracy</th>
-        <th>Koszt</th>
+        <th>@Names.GetName((WorkRegistrationDto x) => x.RegistrationNumber)</th>
+        <th>@Names.GetName((WorkRegistrationDto x) => x.ClerkUsername)</th>
+        <th>@Names.GetName((WorkRegistrationDto x) => x.WorkDate)</th>
+        <th>@Names.GetName((WorkRegistrationDto x) => x.DurationHours)</th>
+        <th>Koszt całkowity</th>
     </TableHeader>
 
     <TableRow>
@@ -118,8 +127,17 @@
                 <InputText class="form-control" @bind-Value="editingWork.ClerkUsername" required />
             </div>
             <div class="col-md-4">
-                <label class="form-label font-weight-bold">ID Pojazdu</label>
-                <InputNumber class="form-control" @bind-Value="editingWork.VehicleId" required />
+                <label class="form-label font-weight-bold">Pojazd</label>
+                <InputSelect class="form-select" @bind-Value="editingWork.VehicleId">
+                    <option value="0" disabled>-- Wybierz pojazd --</option>
+                    @if (availableVehicles != null)
+                    {
+                        @foreach (var v in availableVehicles)
+                        {
+                            <option value="@v.Id">@v.RegistrationNumber (VIN: @v.Vin)</option>
+                        }
+                    }
+                </InputSelect>
             </div>
             <div class="col-md-4">
                 <label class="form-label font-weight-bold">Data pracy</label>
@@ -148,6 +166,7 @@
 
 @code {
     private WorkRegistrationDto[]? works;
+    private VehicleDto[]? availableVehicles;
     
     private UserDto? userData;
     private string currentUserName = "";
@@ -171,6 +190,7 @@
             }
             await LoadWorks();
             await LoadCurrentUser();
+            await LoadVehicles();
         }
         catch (Exception ex)
         {
@@ -193,6 +213,18 @@
         catch (Exception ex)
         {
             Console.WriteLine($"Couldn't load user info: {ex.Message}");
+        }
+    }
+    
+    private async Task LoadVehicles()
+    {
+        try
+        {
+            availableVehicles = await Http.GetFromJsonAsync<VehicleDto[]>("/api/vehicles/get_all");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading vehicles: {ex.Message}");
         }
     }
 

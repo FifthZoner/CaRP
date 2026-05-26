@@ -1,6 +1,7 @@
 @page "/services"
 @using CaRP.Shared.Dtos
 @using CaRP.Client.Components
+@using carp.Shared.Utils
 @inject HttpClient Http
 @inject NavigationManager Nav
 @rendermode @(new InteractiveWebAssemblyRenderMode(prerender: false))
@@ -21,42 +22,60 @@
               Context="service">
 
     <FormFields>
+        @if (!string.IsNullOrEmpty(addErrorMessage))
+        {
+            <div class="col-12 mb-3">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @addErrorMessage
+                </div>
+            </div>
+        }
+
         <div class="col-md-3">
-            <label class="form-label font-weight-bold">Nr Serwisu</label>
-            <InputText class="form-control" @bind-Value="newServicing.ServiceNumber" required />
+            <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.ServiceNumber)</label> 
+            <InputText class="form-control" @bind-Value="newServicing.ServiceNumber" />
         </div>
         <div class="col-md-3">
-            <label class="form-label font-weight-bold">ID Pojazdu</label>
-            <InputNumber class="form-control" @bind-Value="newServicing.VehicleId" required />
+            <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.VehicleId)</label>
+            <InputSelect class="form-select" @bind-Value="newServicing.VehicleId">
+                <option value="0" disabled>-- Wybierz pojazd --</option>
+                @if (availableVehicles != null)
+                {
+                    @foreach (var v in availableVehicles)
+                    {
+                        <option value="@v.Id">@v.RegistrationNumber</option>
+                    }
+                }
+            </InputSelect>
         </div>
         <div class="col-md-3">
-            <label class="form-label font-weight-bold">Użytkownik zlecający</label>
+            <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.ClerkUsername)</label> 
             <InputText class="form-control" @bind-Value="newServicing.ClerkUsername" disabled />
         </div>
         <div class="col-md-3">
-            <label class="form-label font-weight-bold">Data Serwisu</label>
-            <InputDate class="form-control" @bind-Value="newServicing.ServiceDate" required />
+            <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.ServiceDate)</label>
+            <InputDate class="form-control" @bind-Value="newServicing.ServiceDate" />
         </div>
         <div class="col-md-6">
-            <label class="form-label font-weight-bold">Mechanik / Warsztat</label>
-            <InputText class="form-control" @bind-Value="newServicing.MechanicName" required />
+            <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.MechanicName)</label>
+            <InputText class="form-control" @bind-Value="newServicing.MechanicName" />
         </div>
         <div class="col-md-6">
-            <label class="form-label font-weight-bold">Koszt całkowity (PLN)</label>
-            <InputNumber class="form-control" @bind-Value="newServicing.Cost" required />
+            <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.Cost)</label>
+            <InputNumber class="form-control" @bind-Value="newServicing.Cost" />
         </div>
         <div class="col-md-12">
-            <label class="form-label font-weight-bold">Opis usterki / wykonanych prac</label>
-            <InputTextArea class="form-control" @bind-Value="newServicing.IssueDescription" required rows="3" />
+            <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.IssueDescription)</label>
+            <InputTextArea class="form-control" @bind-Value="newServicing.IssueDescription" rows="3" />
         </div>
     </FormFields>
 
     <TableHeader>
-        <th>Nr Zlecenia</th>
-        <th>Pojazd (ID)</th>
-        <th>Data</th>
-        <th>Warsztat</th>
-        <th>Koszt</th>
+        <th>@Names.GetName((ServicingDto x) => x.ServiceNumber)</th>
+        <th>@Names.GetName((ServicingDto x) => x.VehicleId)</th>
+        <th>@Names.GetName((ServicingDto x) => x.ServiceDate)</th>
+        <th>@Names.GetName((ServicingDto x) => x.MechanicName)</th>
+        <th>@Names.GetName((ServicingDto x) => x.Cost)</th>
     </TableHeader>
 
     <TableRow>
@@ -81,22 +100,22 @@
     {
         <div class="row">
             <div class="col-md-6">
-                <p><strong>ID Wpisu:</strong> @selectedServicing.Id</p>
-                <p><strong>Nr Serwisu / Dokumentu:</strong> @selectedServicing.ServiceNumber</p>
-                <p><strong>Pojazd (ID):</strong> @selectedServicing.VehicleId</p>
-                <p><strong>Zlecający:</strong> @selectedServicing.ClerkUsername</p>
+                <p><strong>@Names.GetName((ServicingDto x) => x.Id):</strong> @selectedServicing.Id</p>
+                <p><strong>@Names.GetName((ServicingDto x) => x.ServiceNumber):</strong> @selectedServicing.ServiceNumber</p>
+                <p><strong>@Names.GetName((ServicingDto x) => x.VehicleId):</strong> @selectedServicing.VehicleId</p>
+                <p><strong>@Names.GetName((ServicingDto x) => x.ClerkUsername):</strong> @selectedServicing.ClerkUsername</p>
             </div>
             <div class="col-md-6">
-                <p><strong>Data:</strong> @selectedServicing.ServiceDate.ToString("dd.MM.yyyy")</p>
-                <p><strong>Wykonawca:</strong> @selectedServicing.MechanicName</p>
+                <p><strong>@Names.GetName((ServicingDto x) => x.ServiceDate):</strong> @selectedServicing.ServiceDate.ToString("dd.MM.yyyy")</p>
+                <p><strong>@Names.GetName((ServicingDto x) => x.MechanicName):</strong> @selectedServicing.MechanicName</p>
                 <div class="alert alert-danger p-2 mt-2">
-                    <strong>Koszt naprawy:</strong> @selectedServicing.Cost.ToString("N2") PLN
+                    <strong>@Names.GetName((ServicingDto x) => x.Cost):</strong> @selectedServicing.Cost.ToString("N2") PLN
                 </div>
             </div>
             <div class="col-12 mt-3">
                 <div class="card bg-light border-danger">
                     <div class="card-body">
-                        <h6 class="card-subtitle mb-2 text-muted">Opis problemu / wykonanych prac:</h6>
+                        <h6 class="card-subtitle mb-2 text-muted">@Names.GetName((ServicingDto x) => x.IssueDescription):</h6>
                         <p class="card-text">@selectedServicing.IssueDescription</p>
                     </div>
                 </div>
@@ -108,34 +127,64 @@
 
 <EditModal IsVisible="@showEditModal" Title="@($"Edycja wpisu serwisowego: {editingServicing.ServiceNumber}")" OnClose="() => showEditModal = false">
     <EditForm Model="editingServicing" OnValidSubmit="SaveEdit">
+        
+        @if (!string.IsNullOrEmpty(editErrorMessage))
+        {
+            <div class="alert alert-danger mb-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> @editErrorMessage
+            </div>
+        }
+
         <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label font-weight-bold">Nr Serwisu</label>
-                <InputText class="form-control" @bind-Value="editingServicing.ServiceNumber" required />
+            <div class="col-12 bg-light p-3 rounded-3 border mb-2 d-flex justify-content-around text-center">
+                <div>
+                    <small class="text-muted d-block">@Names.GetName((ServicingDto x) => x.RegistrationNumber)</small>
+                    <strong class="text-primary">@editingServicing.RegistrationNumber</strong>
+                </div>
+                <div>
+                    <small class="text-muted d-block">@Names.GetName((ServicingDto x) => x.Vin)</small>
+                    <strong class="text-secondary">@editingServicing.Vin</strong>
+                </div>
             </div>
-            <div class="col-md-3">
-                <label class="form-label font-weight-bold">ID Pojazdu</label>
-                <InputNumber class="form-control" @bind-Value="editingServicing.VehicleId" required />
+
+            <div class="col-md-4">
+                <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.ServiceNumber)</label>
+                <InputText class="form-control" @bind-Value="editingServicing.ServiceNumber" />
             </div>
-            <div class="col-md-3">
-                <label class="form-label font-weight-bold">Zlecający</label>
-                <InputText class="form-control" @bind-Value="editingServicing.ClerkUsername" required />
+            <div class="col-md-4"> 
+                <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.VehicleId)</label>
+                <InputSelect class="form-select" @bind-Value="editingServicing.VehicleId">
+                    <option value="0" disabled>-- Wybierz pojazd --</option>
+                    @if (availableVehicles != null)
+                    {
+                        @foreach (var v in availableVehicles)
+                        {
+                            <option value="@v.Id">@v.RegistrationNumber</option>
+                        }
+                    }
+                </InputSelect>
             </div>
-            <div class="col-md-3">
-                <label class="form-label font-weight-bold">Data Serwisu</label>
-                <InputDate class="form-control" @bind-Value="editingServicing.ServiceDate" required />
+            <div class="col-md-4">
+                <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.ClerkUsername)</label>
+                <InputText class="form-control" @bind-Value="editingServicing.ClerkUsername" disabled />
             </div>
-            <div class="col-md-6">
-                <label class="form-label font-weight-bold">Mechanik / Warsztat</label>
-                <InputText class="form-control" @bind-Value="editingServicing.MechanicName" required />
+
+            <div class="col-md-4">
+                <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.ServiceDate)</label>
+                <InputDate class="form-control" @bind-Value="editingServicing.ServiceDate" />
             </div>
-            <div class="col-md-6">
-                <label class="form-label font-weight-bold">Koszt</label>
-                <InputNumber class="form-control" @bind-Value="editingServicing.Cost" required />
+            <div class="col-md-8">
+                <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.MechanicName)</label>
+                <InputText class="form-control" @bind-Value="editingServicing.MechanicName" />
+            </div>
+
+            <div class="col-md-12">
+                <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.Cost)</label>
+                <InputNumber class="form-control" @bind-Value="editingServicing.Cost" />
             </div>
             <div class="col-md-12">
-                <label class="form-label font-weight-bold">Opis</label>
-                <InputTextArea class="form-control" @bind-Value="editingServicing.IssueDescription" required rows="4" />
+                <label class="form-label font-weight-bold">@Names.GetName((ServicingDto x) => x.IssueDescription)</label>
+                <InputTextArea class="form-control" @bind-Value="editingServicing.IssueDescription" rows="4" />
             </div>
 
             <div class="col-12 text-end mt-4 pt-3 border-top">
@@ -146,8 +195,11 @@
     </EditForm>
 </EditModal>
 
+
 @code {
     private ServicingDto[]? servicings;
+    
+    private VehicleDto[]? availableVehicles;
     
     private string currentUserName = "";
     private ServicingDto newServicing = new() { ServiceDate = DateOnly.FromDateTime(DateTime.Now) };
@@ -156,6 +208,9 @@
 
     private bool showEditModal = false;
     private bool showDetailsModal = false;
+    
+    private string? addErrorMessage;
+    private string? editErrorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -168,6 +223,7 @@
                 return;
             }
             await LoadCurrentUser();
+            await LoadVehicles();
             await LoadServicings();
         }
         catch
@@ -194,6 +250,18 @@
         }
     }
     
+    private async Task LoadVehicles()
+    {
+        try
+        {
+            availableVehicles = await Http.GetFromJsonAsync<VehicleDto[]>("/api/vehicles/get_all");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading vehicles: {ex.Message}");
+        }
+    }
+    
     private async Task LoadServicings()
     {
         servicings = await Http.GetFromJsonAsync<ServicingDto[]>("/api/service/get_all");
@@ -214,9 +282,13 @@
 
     private async Task AddServicing()
     {
+        addErrorMessage = Validation.Check(newServicing, skipIdFields: true);
+        if (addErrorMessage != null) return;
+        
         var response = await Http.PostAsJsonAsync("/api/service/add", newServicing);
         if (response.IsSuccessStatusCode)
         {
+            addErrorMessage = null;
             newServicing = new ServicingDto()
             {
                 ServiceDate = DateOnly.FromDateTime(DateTime.Now),
@@ -226,7 +298,7 @@
         }
         else
         {
-            Console.WriteLine($"Error adding a service: {response.StatusCode}");
+            addErrorMessage = (await response.Content.ReadAsStringAsync()).Trim('"');
         }
     }
 
@@ -256,22 +328,28 @@
             IssueDescription = service.IssueDescription,
             ServiceDate = service.ServiceDate,
             MechanicName = service.MechanicName,
-            Cost = service.Cost
+            Cost = service.Cost,
+            Vin = service.Vin,
+            RegistrationNumber = service.RegistrationNumber
         };
         showEditModal = true;
     }
-
+    
     private async Task SaveEdit()
     {
+        editErrorMessage = Validation.Check(editingServicing);
+        if (editErrorMessage != null) return;
+        
         var response = await Http.PostAsJsonAsync("/api/service/edit", editingServicing);
         if (response.IsSuccessStatusCode)
         {
+            editErrorMessage = null;
             showEditModal = false;
             await LoadServicings();
         }
         else
         {
-            Console.WriteLine($"Error editing a service: {response.StatusCode}");
+            editErrorMessage = (await response.Content.ReadAsStringAsync()).Trim('"');
         }
     }
 }

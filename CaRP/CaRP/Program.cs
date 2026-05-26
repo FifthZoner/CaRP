@@ -50,7 +50,7 @@ public static void Main(string[] args)
 
     builder.Services.AddCors(options => {
         options.AddPolicy("AllowBlazor", policy => {
-            policy.WithOrigins("https://localhost:5249") // Your Blazor Port
+            policy.SetIsOriginAllowed(origin => true) // Your Blazor Port
                 .AllowAnyMethod()
                 .AllowAnyHeader() // CRITICAL: This allows the 'Authorization' header
                 .AllowCredentials();

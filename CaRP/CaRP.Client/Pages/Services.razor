@@ -280,10 +280,20 @@
         }
     }
 
-    private async Task AddServicing()
+    private async Task<bool> AddServicing()
     {
+        var selectedVehicle = availableVehicles?.FirstOrDefault(v => v.Id == newServicing.VehicleId);
+        if (selectedVehicle != null)
+        {
+            newServicing.RegistrationNumber = selectedVehicle.RegistrationNumber;
+            newServicing.Vin = selectedVehicle.Vin;
+        }
         addErrorMessage = Validation.Check(newServicing, skipIdFields: true);
-        if (addErrorMessage != null) return;
+        if (addErrorMessage != null) 
+        {
+            StateHasChanged(); 
+            return false; 
+        }
         
         var response = await Http.PostAsJsonAsync("/api/service/add", newServicing);
         if (response.IsSuccessStatusCode)
@@ -295,10 +305,13 @@
                 ClerkUsername = currentUserName
             };
             await LoadServicings();
+            return true;
         }
         else
         {
             addErrorMessage = (await response.Content.ReadAsStringAsync()).Trim('"');
+            StateHasChanged();
+            return false;      
         }
     }
 

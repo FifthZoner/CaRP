@@ -75,7 +75,7 @@ else
     [Parameter] public TItem? NewItem { get; set; }
     [Parameter] public string FormTitle { get; set; } = "Dodaj nowy";
     [Parameter] public string ButtonLabel { get; set; } = "Zapisz";
-    [Parameter] public EventCallback OnSave { get; set; }
+    [Parameter] public Func<Task<bool>> OnSave { get; set; } = default!;
     [Parameter] public RenderFragment? FormFields { get; set; }
 
     [Parameter] public IEnumerable<TItem>? Items { get; set; }
@@ -92,8 +92,14 @@ else
 
     private async Task HandleSave()
     {
-        showAddModal = false;
-        await OnSave.InvokeAsync();
+        if (OnSave != null)
+        {
+            bool isSuccess = await OnSave.Invoke();
+            if (isSuccess)
+            {
+                showAddModal = false;
+            }
+        }
     }
     
     private void StartDelete(TItem item)

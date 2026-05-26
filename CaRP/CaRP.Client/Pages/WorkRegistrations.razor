@@ -22,9 +22,17 @@
               Context="work">
 
     <FormFields>
+        @if (!string.IsNullOrEmpty(addErrorMessage))
+        {
+            <div class="col-12 mb-3">
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @addErrorMessage
+                </div>
+            </div>
+        }
         <div class="col-md-4">
             <label class="form-label font-weight-bold">Użytkownik</label>
-            <InputText class="form-control" @bind-Value="newWork.ClerkUsername" disabled />
+            <InputText class="form-control" @bind-Value="newWork.ClerkUsername" disabled/>
         </div>
         <div class="col-md-4">
             <label class="form-label font-weight-bold">Wybierz pojazd</label>
@@ -41,19 +49,19 @@
         </div>
         <div class="col-md-4">
             <label class="form-label font-weight-bold">Data pracy</label>
-            <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="newWork.WorkDate" required />
+            <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="newWork.WorkDate" required/>
         </div>
         <div class="col-md-4">
             <label class="form-label font-weight-bold">Czas trwania (h)</label>
-            <InputNumber class="form-control" @bind-Value="newWork.DurationHours" required />
+            <InputNumber class="form-control" @bind-Value="newWork.DurationHours" required/>
         </div>
         <div class="col-md-4">
             <label class="form-label font-weight-bold">Stawka (PLN/h)</label>
-            <InputNumber class="form-control" @bind-Value="newWork.CostPerHour" required />
+            <InputNumber class="form-control" @bind-Value="newWork.CostPerHour" required/>
         </div>
         <div class="col-md-12">
             <label class="form-label font-weight-bold">Opis wykonanych prac</label>
-            <InputTextArea class="form-control" @bind-Value="newWork.Description" required rows="3" />
+            <InputTextArea class="form-control" @bind-Value="newWork.Description" required rows="3"/>
         </div>
     </FormFields>
 
@@ -121,10 +129,18 @@
 
 <EditModal IsVisible="@showEditModal" Title="@($"Edycja Karty Pracy ID: {editingWork.Id}")" OnClose="() => showEditModal = false">
     <EditForm Model="editingWork" OnValidSubmit="SaveEdit">
+        
+        @if (!string.IsNullOrEmpty(editErrorMessage))
+        {
+            <div class="alert alert-danger mb-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> @editErrorMessage
+            </div>
+        }
+        
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="form-label font-weight-bold">Użytkownik</label>
-                <InputText class="form-control" @bind-Value="editingWork.ClerkUsername" required />
+                <InputText class="form-control" @bind-Value="editingWork.ClerkUsername" required/>
             </div>
             <div class="col-md-4">
                 <label class="form-label font-weight-bold">Pojazd</label>
@@ -141,19 +157,19 @@
             </div>
             <div class="col-md-4">
                 <label class="form-label font-weight-bold">Data pracy</label>
-                <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="editingWork.WorkDate" required />
+                <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="editingWork.WorkDate" required/>
             </div>
             <div class="col-md-6">
                 <label class="form-label font-weight-bold">Czas trwania (h)</label>
-                <InputNumber class="form-control" @bind-Value="editingWork.DurationHours" required />
+                <InputNumber class="form-control" @bind-Value="editingWork.DurationHours" required/>
             </div>
             <div class="col-md-6">
                 <label class="form-label font-weight-bold">Stawka (PLN/h)</label>
-                <InputNumber class="form-control" @bind-Value="editingWork.CostPerHour" required />
+                <InputNumber class="form-control" @bind-Value="editingWork.CostPerHour" required/>
             </div>
             <div class="col-md-12">
                 <label class="form-label font-weight-bold">Opis wykonanych prac</label>
-                <InputTextArea class="form-control" @bind-Value="editingWork.Description" required rows="4" />
+                <InputTextArea class="form-control" @bind-Value="editingWork.Description" required rows="4"/>
             </div>
 
             <div class="col-12 text-end mt-4 pt-3 border-top">
@@ -177,6 +193,9 @@
 
     private bool showEditModal = false;
     private bool showDetailsModal = false;
+    
+    private string? addErrorMessage;
+    private string? editErrorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -184,9 +203,9 @@
         {
             userData = await Http.GetFromJsonAsync<UserDto>("user/login_details");
             
-            if (userData == null)
+            if (userData == null || (int)userData.RoleLevel < 1)
             {
-                Nav.NavigateTo("/");
+                Nav.NavigateTo("/home");
             }
             await LoadWorks();
             await LoadCurrentUser();
@@ -233,17 +252,31 @@
         works = await Http.GetFromJsonAsync<WorkRegistrationDto[]>("/api/work/get_all");
     }
 
-    private async Task AddWork()
+    private async Task<bool> AddWork()
     {
+        addErrorMessage = Validation.Check(newWork, skipIdFields: true);
+        if (addErrorMessage != null) 
+        {
+            StateHasChanged();
+            return false;
+        }
         var response = await Http.PostAsJsonAsync("/api/work/add", newWork);
         if (response.IsSuccessStatusCode)
         {
+            addErrorMessage = null;
             newWork = new WorkRegistrationDto()
             {
                 WorkDate = DateTime.Now,
                 ClerkUsername = currentUserName
             };
             await LoadWorks();
+            return true;
+        }
+        else
+        {
+            addErrorMessage = (await response.Content.ReadAsStringAsync()).Trim('"');
+            StateHasChanged();
+            return false;
         }
     }
     
@@ -282,11 +315,19 @@
 
     private async Task SaveEdit()
     {
+        editErrorMessage = Validation.Check(editingWork);
+        if (editErrorMessage != null) return;
+        
         var response = await Http.PostAsJsonAsync("/api/work/edit", editingWork);
         if (response.IsSuccessStatusCode)
         {
+            editErrorMessage = null;
             showEditModal = false;
             await LoadWorks();
+        }
+        else
+        {
+            editErrorMessage = (await response.Content.ReadAsStringAsync()).Trim('"');
         }
     }
     

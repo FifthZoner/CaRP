@@ -221,11 +221,14 @@
         }
     }
     
-    private async Task AddVehicle()
+    private async Task<bool> AddVehicle()
     {
-        // Sprawdzenie walidacji (frontend)
         addErrorMessage = Validation.Check(newVehicle, skipIdFields: true);
-        if (addErrorMessage != null) return;
+        if (addErrorMessage != null) 
+        {
+            StateHasChanged();
+            return false;
+        }
 
         var response = await Http.PostAsJsonAsync("/api/vehicles/add", newVehicle);
         if (response.IsSuccessStatusCode)
@@ -233,10 +236,13 @@
             addErrorMessage = null;
             newVehicle = new VehicleDto();
             await LoadVehicles();
+            return true;
         }
         else
         {
             addErrorMessage = (await response.Content.ReadAsStringAsync()).Trim('"');
+            StateHasChanged();
+            return false;
         }
     }
     
@@ -257,7 +263,6 @@
     
     private async Task SaveEdit()
     {
-        // Sprawdzenie walidacji (frontend)
         editErrorMessage = Validation.Check(editingVehicle);
         if (editErrorMessage != null) return;
 

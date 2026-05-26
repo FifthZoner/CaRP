@@ -3,23 +3,28 @@
 
 @if (NewItem != null)
 {
-    <div class="card border-primary mb-4">
-        <div class="card-header bg-primary text-white">@FormTitle</div>
-        <div class="card-body">
-
-            <EditForm Model="NewItem" OnValidSubmit="OnSave">
-                <div class="row g-3">
-                    @FormFields
-                    <div class="col-12 text-end">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-plus-circle"></i> @ButtonLabel
-                        </button>
-                    </div>
-                </div>
-            </EditForm>
-
-        </div>
+    <div class="text-center mb-4">
+        <button class="btn btn-success btn-lg px-5 shadow-sm" @onclick="() => showAddModal = true">
+            <i class="bi bi-plus-circle me-2"></i> @FormTitle
+        </button>
     </div>
+
+    <AddModal IsVisible="showAddModal" Title="@FormTitle" OnClose="() => showAddModal = false">
+        <EditForm Model="NewItem" OnValidSubmit="HandleSave">
+            <div class="row g-3">
+                @FormFields
+                
+                <div class="col-12 text-end mt-4 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary me-2" @onclick="() => showAddModal = false">
+                        Anuluj
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> @ButtonLabel
+                    </button>
+                </div>
+            </div>
+        </EditForm>
+    </AddModal>
 }
 
 @if (Items == null)
@@ -79,8 +84,15 @@ else
     [Parameter] public EventCallback<TItem> OnEdit { get; set; }
     
     private bool showModal = false;
+    private bool showAddModal = false;
     private TItem? itemToDelete;
 
+    private async Task HandleSave()
+    {
+        showAddModal = false;
+        await OnSave.InvokeAsync();
+    }
+    
     private void StartDelete(TItem item)
     {
         itemToDelete = item;

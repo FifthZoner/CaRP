@@ -29,7 +29,10 @@
 
 @if (Items == null)
 {
-    <p><em>Pobieranie danych...</em></p>
+    <div class="text-center p-4">
+        <img src="fish_carp.png" alt="Wczytywanie..." class="spinner-border border-0" style="width: 80px; height: 80px;" />
+        <p class="mt-3 text-muted">Pobieranie...</p>
+    </div>
 }
 else
 {

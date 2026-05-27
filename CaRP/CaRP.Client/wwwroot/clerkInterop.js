@@ -3,43 +3,53 @@ window.clerkInterop = {
     initPromise: null,
 
     init: async function () {
+        // Polling loop: If Clerk script is still downloading, wait for it
+        let attempts = 0;
+        while (!window.Clerk && attempts < 50) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+        }
+
         if (!window.Clerk) {
-            console.error("Clerk script not loaded yet.");
+            console.error("Clerk script failed to load after 5 seconds.");
             return;
         }
+
         if (!this.initPromise) {
             this.initPromise = window.Clerk.load();
         }
         await this.initPromise;
-        console.log("Clerk initialized successfully");
     },
 
-    openSignIn: async () => {
-        Clerk.openSignIn();
+    hasActiveSession: async function () {
+        await this.init();
+        return !!(window.Clerk && window.Clerk.session);
     },
-    
-    openSignUp: async () => {
-        Clerk.openSignUp();
+
+    openSignIn: async function () {
+        await this.init();
+        window.Clerk.openSignIn();
+    },
+
+    openSignUp: async function () {
+        await this.init();
+        window.Clerk.openSignUp();
     },
 
     getAccessToken: async function () {
         await this.init();
-        
-        if (!window.Clerk || !window.Clerk.session) {
+        if (!window.Clerk || !window.Clerk.session) return null;
+        try {
+            return await window.Clerk.session.getToken({ template: "rolelevel" });
+        } catch (e) {
             return null;
         }
-            // This retrieves the short-lived JWT (session token)
-            return await window.Clerk.session.getToken({ template: "rolelevel" });
-        },
+    },
 
-    logout: async () => {
-        
-        if (!window.Clerk || !window.Clerk.session) {
-            console.error("Clerk script not loaded yet.");
+    logout: async function () {
+        await this.init();
+        if (window.Clerk && window.Clerk.session) {
+            await window.Clerk.signOut();
         }
-        await window.Clerk.signOut();
-        console.log("Logged out of clerk succesfully.");
     }
 };
-
-window.clerkInterop.init();

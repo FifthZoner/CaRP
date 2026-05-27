@@ -51,18 +51,32 @@
     }
 </div>
 
+@using CaRP.Shared.Dtos
+@implements IDisposable
+
 @code {
     private bool isLoading = true;
     private bool isLoggedIn = false;
+    private bool isCheckingModal = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("clerkInterop.init");
-            await CheckAuthState();
-            isLoading = false;
-            StateHasChanged();
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("clerkInterop.init");
+                await CheckAuthState();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during initialization: {ex.Message}");
+            }
+            finally
+            {
+                isLoading = false;
+                StateHasChanged();
+            }
         }
     }
 
@@ -70,36 +84,68 @@
     {
         try
         {
-            var token = await JSRuntime.InvokeAsync<string>("clerkInterop.getAccessToken");
-            isLoggedIn = !string.IsNullOrEmpty(token);
+            // Direct boolean check from our new JS method
+            isLoggedIn = await JSRuntime.InvokeAsync<bool>("clerkInterop.hasActiveSession");
         }
-        catch { isLoggedIn = false; }
+        catch
+        {
+            isLoggedIn = false;
+        }
     }
 
-    private async Task HandleLogin() => await JSRuntime.InvokeVoidAsync("clerkInterop.openSignIn");
+    private async Task HandleLogin()
+    {
+        await JSRuntime.InvokeVoidAsync("clerkInterop.openSignIn");
+        StartAuthCheckLoop();
+    }
 
     private async Task HandleSignUp()
     {
-        try
+        await JSRuntime.InvokeVoidAsync("clerkInterop.openSignUp");
+        StartAuthCheckLoop();
+    }
+
+    // This background loop watches for the modal completion
+    private async void StartAuthCheckLoop()
+    {
+        if (isCheckingModal) return;
+        isCheckingModal = true;
+
+        // Check for a session every 1 second, up to 60 times (1 minute timeout)
+        for (int i = 0; i < 60; i++)
         {
-            await JSRuntime.InvokeVoidAsync("clerkInterop.openSignUp");
+            await Task.Delay(1000);
+
+            await CheckAuthState();
+
+            if (isLoggedIn)
+            {
+                // User logged in successfully! Update UI and break loop.
+                StateHasChanged();
+                break;
+            }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Sign up error: {ex.Message}");
-        }
-    } 
-    
+
+        isCheckingModal = false;
+    }
+
     private async Task HandleLogout()
     {
         try
         {
             await JSRuntime.InvokeVoidAsync("clerkInterop.logout");
+            isLoggedIn = false;
+            StateHasChanged();
             Nav.NavigateTo("/", forceLoad: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Error while logging out: {ex.Message}");
         }
+    }
+
+    public void Dispose()
+    {
+        // Left intentionally blank for now
     }
 }

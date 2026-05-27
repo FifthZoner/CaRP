@@ -34,7 +34,7 @@ public static partial class Endpoints
     public static RoleEnum GetRole(string? role)
     {
         if (!int.TryParse(role, out var roleLevel))
-            return RoleEnum.Unset;
+            return RoleEnum.Nieustawiona;
         return (RoleEnum)roleLevel;
     }
 

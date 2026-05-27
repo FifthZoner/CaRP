@@ -31,7 +31,7 @@ public class UserDto
 
     [ValidationMethod(typeof(ValidatorNotNull))]
     [ActualName("Rola")]
-    public RoleEnum RoleLevel { get; set; } = RoleEnum.Unset;
+    public RoleEnum RoleLevel { get; set; } = RoleEnum.Nieustawiona;
 }
 
 

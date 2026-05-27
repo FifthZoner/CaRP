@@ -80,16 +80,16 @@ WITH inserted_vehicles AS (
              SELECT
                  -- Randomly assigns 1 of 10 clerk usernames
                  CASE (floor(random() * 10)::int)
-                     WHEN 0 THEN 'jan.kowalski'
-                     WHEN 1 THEN 'anna.nowak'
-                     WHEN 2 THEN 'piotr.zielinski'
-                     WHEN 3 THEN 'marta.wisniewska'
-                     WHEN 4 THEN 'tomasz.wojcik'
-                     WHEN 5 THEN 'karolina.kaczmarek'
-                     WHEN 6 THEN 'michal.mazur'
-                     WHEN 7 THEN 'agnieszka.krawczyk'
-                     WHEN 8 THEN 'lukasz.zajac'
-                     ELSE 'magda.krupa'
+                     WHEN 0 THEN 'jan_kowalski'
+                     WHEN 1 THEN 'anna_nowak'
+                     WHEN 2 THEN 'piotr_zielinski'
+                     WHEN 3 THEN 'marta_wisniewska'
+                     WHEN 4 THEN 'tomasz_wojcik'
+                     WHEN 5 THEN 'karolina_kaczmarek'
+                     WHEN 6 THEN 'michal_mazur'
+                     WHEN 7 THEN 'agnieszka_krawczyk'
+                     WHEN 8 THEN 'lukasz_zajac'
+                     ELSE 'magda_krupa'
                      END,
                  v.id,
                  CURRENT_DATE
@@ -136,10 +136,10 @@ SELECT
     v.id,
     -- Randomly assigns 1 of 10 clerk usernames for reporting the breakdown
     CASE (floor(random() * 4)::int)
-        WHEN 0 THEN 'jan.kowalski'
-        WHEN 1 THEN 'janusz.byk'
-        WHEN 2 THEN 'zenon.maciorski'
-        ELSE 'eliza.sas'
+        WHEN 0 THEN 'jan_kowalski'
+        WHEN 1 THEN 'janusz_byk'
+        WHEN 2 THEN 'zenon_maciorski'
+        ELSE 'eliza_sas'
         END,
     -- Expanded list of 12 detailed breakdown descriptions
     CASE (floor(random() * 12)::int)

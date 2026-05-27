@@ -15,7 +15,7 @@ public partial class Endpoints
 {
     private static async Task<IResult> WorkGetAll(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromServices] IMapper mapper)
     {
-        if (user.IsNotAtLeast(RoleEnum.Driver))
+        if (user.IsNotAtLeast(RoleEnum.Kierowca))
             return Results.Unauthorized();
 
         List<WorkRegistrationDto> work;
@@ -36,7 +36,7 @@ public partial class Endpoints
 
     private static async Task<IResult> WorkGetDetail(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] GetDetailDto getDetailDto, [FromServices] IMapper mapper)
     {
-        if (user.IsNotAtLeast(RoleEnum.Driver))
+        if (user.IsNotAtLeast(RoleEnum.Kierowca))
             return Results.Unauthorized();
 
         var work = await db.WorkRegistrations
@@ -55,7 +55,7 @@ public partial class Endpoints
 
     private static async Task<IResult> WorkAdd(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] WorkRegistrationDto dto, [FromServices] IMapper mapper)
     {
-        if (user.IsNotAtLeast(RoleEnum.Driver))
+        if (user.IsNotAtLeast(RoleEnum.Kierowca))
             return Results.Unauthorized();
 
 
@@ -77,7 +77,7 @@ public partial class Endpoints
 
     private static async Task<IResult> WorkEdit(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] WorkRegistrationDto dto, [FromServices] IMapper mapper)
     {
-        if (user.IsNotAtLeast(RoleEnum.Driver))
+        if (user.IsNotAtLeast(RoleEnum.Kierowca))
             return Results.Unauthorized();
 
         var work = await db.WorkRegistrations.FindAsync(dto.Id);
@@ -98,7 +98,7 @@ public partial class Endpoints
 
     private static async Task<IResult> WorkDelete(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] GetDetailDto getDetailDto)
     {
-        if (user.IsNotAtLeast(RoleEnum.Manager))
+        if (user.IsNotAtLeast(RoleEnum.Menedżer))
             return Results.Unauthorized();
 
         var work = await db.WorkRegistrations.FindAsync(getDetailDto.Id);

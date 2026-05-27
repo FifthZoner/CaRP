@@ -2,8 +2,8 @@ namespace carp.Shared.Enums;
 
 public enum RoleEnum
 {
-    Unset = 0,
-    Driver = 1,
-    Manager = 2,
-    Admin = 3
+    Nieustawiona = 0,
+    Kierowca = 1,
+    Menedżer = 2,
+    Administrator = 3
 }

@@ -14,7 +14,7 @@ public partial class Endpoints
 {
     private static async Task<IResult> VehiclesGetAll(ClaimsPrincipal user, [FromServices] CaRpDbContext db)
     {
-        if (user.IsNotAtLeast(RoleEnum.Driver))
+        if (user.IsNotAtLeast(RoleEnum.Kierowca))
             return Results.Unauthorized();
 
         var vehicles = await db.Vehicles.ToListAsync();
@@ -23,7 +23,7 @@ public partial class Endpoints
 
     private static async Task<IResult> VehiclesGetDetail(ClaimsPrincipal user, [FromServices] CaRpDbContext db, GetDetailDto getDetailDto, [FromServices] IMapper mapper)
     {
-        if (user.IsNotAtLeast(RoleEnum.Driver))
+        if (user.IsNotAtLeast(RoleEnum.Kierowca))
             return Results.Unauthorized();
 
         var check = Validation.Check(getDetailDto);
@@ -40,7 +40,7 @@ public partial class Endpoints
 
     private static async Task<IResult> VehiclesAdd(ClaimsPrincipal user, [FromServices] CaRpDbContext db, VehicleDto dto, [FromServices] IMapper mapper)
     {
-        if (user.IsNotAtLeast(RoleEnum.Manager))
+        if (user.IsNotAtLeast(RoleEnum.Menedżer))
             return Results.Unauthorized();
 
         var check = Validation.Check(dto, true);
@@ -62,7 +62,7 @@ public partial class Endpoints
 
     private static async Task<IResult> VehiclesEdit(ClaimsPrincipal user, [FromServices] CaRpDbContext db, VehicleDto dto, [FromServices] IMapper mapper)
     {
-        if (user.IsNotAtLeast(RoleEnum.Manager))
+        if (user.IsNotAtLeast(RoleEnum.Menedżer))
             return Results.Unauthorized();
 
         var check = Validation.Check(dto);
@@ -83,7 +83,7 @@ public partial class Endpoints
 
     private static async Task<IResult> VehiclesDelete(ClaimsPrincipal user, [FromServices] CaRpDbContext db, GetDetailDto getDetailDto)
     {
-        if (user.IsNotAtLeast(RoleEnum.Manager))
+        if (user.IsNotAtLeast(RoleEnum.Menedżer))
             return Results.Unauthorized();
 
         var check = Validation.Check(getDetailDto);

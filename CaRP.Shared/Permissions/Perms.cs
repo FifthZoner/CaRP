@@ -33,27 +33,27 @@ namespace carp.Shared.Permissions
         public bool CanFullAll(RoleEnum role) => _permissions.Any(p => p.Role == role && p.WriteAll && p.ReadAll);
 
         public static readonly Perms Vehicles = new (
-            new(RoleEnum.Admin, true, true, true, true),
-            new(RoleEnum.Manager, true, true, true, true),
-            new(RoleEnum.Driver, true, true, false, false)
+            new(RoleEnum.Administrator, true, true, true, true),
+            new(RoleEnum.Menedżer, true, true, true, true),
+            new(RoleEnum.Kierowca, true, true, false, false)
         );
         
         public static readonly Perms Work = new (
-            new (RoleEnum.Admin, true, true, true, true),
-            new (RoleEnum.Manager, true, true, true, true),
-            new (RoleEnum.Driver, true, false, true, false)
+            new (RoleEnum.Administrator, true, true, true, true),
+            new (RoleEnum.Menedżer, true, true, true, true),
+            new (RoleEnum.Kierowca, true, false, true, false)
         );
         
         public static readonly Perms Services = new (
-            new (RoleEnum.Admin, true, true, true, true),
-            new (RoleEnum.Manager, true, true, true, true),
-            new (RoleEnum.Driver, true, true, false, false)
+            new (RoleEnum.Administrator, true, true, true, true),
+            new (RoleEnum.Menedżer, true, true, true, true),
+            new (RoleEnum.Kierowca, true, true, false, false)
         );
         
         public static readonly Perms Users = new (
-            new(RoleEnum.Admin, true, true, true, true),
-            new(RoleEnum.Manager, false, false, false, false),
-            new(RoleEnum.Driver, false, false, false, false)
+            new(RoleEnum.Administrator, true, true, true, true),
+            new(RoleEnum.Menedżer, false, false, false, false),
+            new(RoleEnum.Kierowca, false, false, false, false)
         );
     }
 }

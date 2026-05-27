@@ -31,7 +31,7 @@ public partial class Endpoints
                 .ToListAsync();
         else return Results.Unauthorized();
 
-        return Results.Ok(work);
+        return Results.Ok(work.OrderBy(x => x.WorkDate).ThenBy(x => x.RegistrationNumber).ToList());
     }
 
     private static async Task<IResult> WorkGetDetail(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromBody] GetDetailDto getDetailDto, [FromServices] IMapper mapper)

@@ -11,7 +11,7 @@ public class ServicingDto : Servicing
     [ActualName("Nr VIN")]
     public string Vin { get; set; } = null!;
 
-    [ValidationMethod(typeof(ValidatorNotNull))]
+    [ValidationMethod(typeof(ValidatorOptional))]
     [ActualName("Nr rejestracyjny")]
     public string RegistrationNumber { get; set; } = null!;
 }

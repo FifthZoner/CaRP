@@ -17,14 +17,14 @@ public partial class Endpoints
     private static async Task<IResult> ServiceGetAll(ClaimsPrincipal user, [FromServices] CaRpDbContext db, [FromServices] IMapper mapper)
     {
         if (user.Has(Perms.Services.CanReadAll))
-            return Results.Ok(await db.Servicing
+            return Results.Ok((await db.Servicing
                 .ProjectTo<ServicingDto>(mapper.ConfigurationProvider)
-                .ToListAsync());
+                .ToListAsync()).OrderBy(x => x.ServiceDate).ThenBy(x => x.RegistrationNumber).ToList());
         if (user.Has(Perms.Services.CanReadOwn))
-            return Results.Ok(await db.Servicing
+            return Results.Ok((await db.Servicing
                 .Where(x => x.ClerkUsername == user.Login())
                 .ProjectTo<ServicingDto>(mapper.ConfigurationProvider)
-                .ToListAsync());
+                .ToListAsync()).OrderBy(x => x.ServiceDate).ThenBy(x => x.RegistrationNumber).ToList());
         return Results.Unauthorized();
     }
 

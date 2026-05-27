@@ -18,12 +18,12 @@ public partial class Endpoints
             return Results.Unauthorized();
 
         var vehicles = await db.Vehicles.ToListAsync();
-        return Results.Ok(vehicles);
+        return Results.Ok(vehicles.OrderBy(x => x.AvailableFrom).ThenBy(x => x.RegistrationNumber).ToList());
     }
 
     private static async Task<IResult> VehiclesGetDetail(ClaimsPrincipal user, [FromServices] CaRpDbContext db, GetDetailDto getDetailDto, [FromServices] IMapper mapper)
     {
-        if (user.IsNotAtLeast(RoleEnum.Manager))
+        if (user.IsNotAtLeast(RoleEnum.Driver))
             return Results.Unauthorized();
 
         var check = Validation.Check(getDetailDto);

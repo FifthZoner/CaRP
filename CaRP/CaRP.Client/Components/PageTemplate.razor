@@ -1,7 +1,8 @@
 @typeparam TItem
 @using CaRP.Client.Components
 
-@if (NewItem != null)
+@* 1. Only render the Add layout if it's NOT read-only and an item template exists *@
+@if (!IsReadOnly && NewItem != null)
 {
     <div class="text-center mb-4">
         <button class="btn btn-success btn-lg px-5 shadow-sm" @onclick="() => showAddModal = true">
@@ -13,7 +14,7 @@
         <EditForm Model="NewItem" OnValidSubmit="HandleSave">
             <div class="row g-3">
                 @FormFields
-                
+
                 <div class="col-12 text-end mt-4 pt-3 border-top">
                     <button type="button" class="btn btn-secondary me-2" @onclick="() => showAddModal = false">
                         Anuluj
@@ -39,7 +40,6 @@ else
     <table class="table table-striped table-hover">
         <thead class="table-dark">
         <tr>
-            <!-- <th> -->
             @TableHeader
             <th>Akcje</th>
         </tr>
@@ -53,8 +53,13 @@ else
                     @TableRow(item)
                     <td>
                         <button class="btn btn-sm btn-info text-white" @onclick="() => OnDetails.InvokeAsync(item)">Szczegóły</button>
-                        <button class="btn btn-sm btn-primary" @onclick="() => OnEdit.InvokeAsync(item)">Edytuj</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => StartDelete(item)">Usuń</button>
+
+                        @* 2. Only show write actions if it's NOT read-only *@
+                        @if (!IsReadOnly)
+                        {
+                            <button class="btn btn-sm btn-primary" @onclick="() => OnEdit.InvokeAsync(item)">Edytuj</button>
+                            <button class="btn btn-sm btn-danger" @onclick="() => StartDelete(item)">Usuń</button>
+                        }
                     </td>
                 </tr>
             }
@@ -64,10 +69,10 @@ else
 }
 
 
-<ConfirmationModal IsVisible="showModal" 
-                   Title="Usuwanie elementu" 
+<ConfirmationModal IsVisible="showModal"
+                   Title="Usuwanie elementu"
                    Message="Czy na pewno chcesz trwale usunąć ten rekord?"
-                   OnConfirm="ConfirmDelete" 
+                   OnConfirm="ConfirmDelete"
                    OnCancel="() => showModal = false" />
 
 
@@ -81,17 +86,22 @@ else
     [Parameter] public IEnumerable<TItem>? Items { get; set; }
     [Parameter] public RenderFragment? TableHeader { get; set; }
     [Parameter] public RenderFragment<TItem>? TableRow { get; set; }
-    
+
     [Parameter] public EventCallback<TItem> OnDetails { get; set; }
     [Parameter] public EventCallback<TItem> OnDelete { get; set; }
     [Parameter] public EventCallback<TItem> OnEdit { get; set; }
-    
+
+    // Added to catch the role-level boolean flag passed from parent pages
+    [Parameter] public bool IsReadOnly { get; set; } = false;
+
     private bool showModal = false;
     private bool showAddModal = false;
     private TItem? itemToDelete;
 
     private async Task HandleSave()
     {
+        if (IsReadOnly) return; // Code-level guard bypass fallback
+
         if (OnSave != null)
         {
             bool isSuccess = await OnSave.Invoke();
@@ -101,15 +111,17 @@ else
             }
         }
     }
-    
+
     private void StartDelete(TItem item)
     {
+        if (IsReadOnly) return; // Code-level guard bypass fallback
         itemToDelete = item;
         showModal = true;
     }
 
     private async Task ConfirmDelete()
     {
+        if (IsReadOnly) return; // Code-level guard bypass fallback
         showModal = false;
         if (itemToDelete != null)
         {

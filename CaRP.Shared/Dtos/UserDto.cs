@@ -5,7 +5,7 @@ using carp.Shared.Enums;
 
 public class UserDto
 {
-    [ValidationMethod(typeof(ValidatorGreaterThan0<int>))]
+    [ValidationMethod(typeof(ValidatorNotNull))]
     [ActualName("Id użytkownika")]
     public string Id { get; set; } = string.Empty;
 

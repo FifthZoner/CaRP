@@ -72,7 +72,7 @@
 
     <TableHeader>
         <th>@Names.GetName((ServicingDto x) => x.ServiceNumber)</th>
-        <th>@Names.GetName((ServicingDto x) => x.VehicleId)</th>
+        <th>@Names.GetName((ServicingDto x) => x.RegistrationNumber)</th>
         <th>@Names.GetName((ServicingDto x) => x.ServiceDate)</th>
         <th>@Names.GetName((ServicingDto x) => x.MechanicName)</th>
         <th>@Names.GetName((ServicingDto x) => x.Cost)</th>
@@ -80,7 +80,7 @@
 
     <TableRow>
         <td><strong>@service.ServiceNumber</strong></td>
-        <td>@service.VehicleId</td>
+        <td>@service.RegistrationNumber</td>
         <td>@service.ServiceDate.ToString("dd.MM.yyyy")</td>
         <td>@service.MechanicName</td>
         <td>@service.Cost.ToString("N2") PLN</td>
@@ -261,7 +261,7 @@
             Console.WriteLine($"Error loading vehicles: {ex.Message}");
         }
     }
-    
+
     private async Task LoadServicings()
     {
         servicings = await Http.GetFromJsonAsync<ServicingDto[]>("/api/service/get_all");
@@ -305,6 +305,7 @@
                 ClerkUsername = currentUserName
             };
             await LoadServicings();
+            StateHasChanged();
             return true;
         }
         else

@@ -92,7 +92,10 @@ WITH inserted_vehicles AS (
                      ELSE 'magda.krupa'
                      END,
                  v.id,
-                 CURRENT_DATE - (random() * 120)::int * INTERVAL '1 day',
+                 CURRENT_DATE
+                     - (random() * 120)::int * INTERVAL '1 day' -- Losowy dzień wstecz
+                     + (7 + random() * 9)::int * INTERVAL '1 hour' -- Losowa godzina startu (7:00 - 16:00)
+                     + (random() * 59)::int * INTERVAL '1 minute', -- Losowa minuta (0 - 59),
                  round((random() * 9 + 1)::numeric, 1),
                  -- Expanded list of 15 unique work descriptions
                  CASE (floor(random() * 15)::int)
@@ -132,17 +135,11 @@ SELECT
     'ZGL-' || upper(substring(replace(gen_random_uuid()::text, '-', ''), 1, 8)),
     v.id,
     -- Randomly assigns 1 of 10 clerk usernames for reporting the breakdown
-    CASE (floor(random() * 10)::int)
+    CASE (floor(random() * 4)::int)
         WHEN 0 THEN 'jan.kowalski'
-        WHEN 1 THEN 'anna.nowak'
-        WHEN 2 THEN 'piotr.zielinski'
-        WHEN 3 THEN 'marta.wisniewska'
-        WHEN 4 THEN 'tomasz.wojcik'
-        WHEN 5 THEN 'karolina.kaczmarek'
-        WHEN 6 THEN 'michal.mazur'
-        WHEN 7 THEN 'agnieszka.krawczyk'
-        WHEN 8 THEN 'lukasz.zajac'
-        ELSE 'magda.krupa'
+        WHEN 1 THEN 'janusz.byk'
+        WHEN 2 THEN 'zenon.maciorski'
+        ELSE 'eliza.sas'
         END,
     -- Expanded list of 12 detailed breakdown descriptions
     CASE (floor(random() * 12)::int)

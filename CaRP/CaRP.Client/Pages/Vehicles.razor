@@ -10,85 +10,91 @@
 
 <h1 class="text-center">Lista pojazdów</h1>
 
-<PageTemplate TItem="VehicleDto" 
-              Items="vehicles" 
-              NewItem="newVehicle" 
-              OnSave="AddVehicle" 
-              OnDetails="ShowDetails"
-              OnEdit="OpenEditModal"
-              OnDelete="DeleteVehicle"
-              FormTitle="Dodaj nowy pojazd"
-              Context="vehicle">
-    
-    <FormFields>
-        @if (!string.IsNullOrEmpty(addErrorMessage))
-        {
-            <div class="col-12 mb-3">
-                <div class="alert alert-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @addErrorMessage
+@if (userRoleLevel >= 1)
+{
+    <PageTemplate TItem="VehicleDto"
+                  Items="vehicles"
+                  NewItem="newVehicle"
+                  OnSave="AddVehicle"
+                  OnDetails="ShowDetails"
+                  OnEdit="OpenEditModal"
+                  OnDelete="DeleteVehicle"
+                  FormTitle="Dodaj nowy pojazd"
+                  IsReadOnly="@(userRoleLevel <= 1)"
+                  Context="vehicle">
+
+        <FormFields>
+            @if (userRoleLevel > 1)
+            {
+                @if (!string.IsNullOrEmpty(addErrorMessage))
+                {
+                    <div class="col-12 mb-3">
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> @addErrorMessage
+                        </div>
+                    </div>
+                }
+
+                <div class="col-md-3">
+                    <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.Vin)</label>
+                    <InputText class="form-control" @bind-Value="newVehicle.Vin" />
                 </div>
-            </div>
-        }
-
-        <div class="col-md-3">
-            <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.Vin)</label>
-            <InputText class="form-control" @bind-Value="newVehicle.Vin" />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.RegistrationNumber)</label>
-            <InputText class="form-control" @bind-Value="newVehicle.RegistrationNumber" />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.VehicleType)</label>
-            <InputText class="form-control" @bind-Value="newVehicle.VehicleType" />
-        </div>
-        <div class="col-md-3 d-flex align-items-end">
-            <div class="form-check mb-2">
-                <InputCheckbox class="form-check-input" id="isCompany" @bind-Value="newVehicle.IsOwnedByCompany" />
-                <label class="form-check-label font-weight-bold" for="isCompany">@Names.GetName((VehicleDto x) => x.IsOwnedByCompany)</label>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableFrom)</label>
-            <InputDate class="form-control" @bind-Value="newVehicle.AvailableFrom" />
-        </div>
-        <div class="col-md-3">
-            <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableTo)</label>
-            <InputDate class="form-control" @bind-Value="newVehicle.AvailableTo" />
-        </div>
-    </FormFields>
-    
-    
-    <TableHeader>
-        <th>@Names.GetName((VehicleDto x) => x.Vin)</th>
-        <th>@Names.GetName((VehicleDto x) => x.RegistrationNumber)</th>
-        <th>@Names.GetName((VehicleDto x) => x.VehicleType)</th>
-        <th>@Names.GetName((VehicleDto x) => x.AvailableFrom)</th>
-        <th>@Names.GetName((VehicleDto x) => x.AvailableTo)</th>
-        <th>@Names.GetName((VehicleDto x) => x.IsOwnedByCompany)</th>
-    </TableHeader>
-
-    <TableRow>
-        <td>@vehicle.Vin</td>
-        <td><strong>@vehicle.RegistrationNumber</strong></td>
-        <td>@vehicle.VehicleType</td>
-                
-        <td>@(vehicle.AvailableFrom?.ToString("dd.MM.yyyy") ?? "-")</td>
-        <td>@(vehicle.AvailableTo?.ToString("dd.MM.yyyy") ?? "-")</td>
-                
-        <td>
-            @if (vehicle.IsOwnedByCompany)
-            {
-                <span class="badge bg-success">Tak</span>
+                <div class="col-md-3">
+                    <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.RegistrationNumber)</label>
+                    <InputText class="form-control" @bind-Value="newVehicle.RegistrationNumber" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.VehicleType)</label>
+                    <InputText class="form-control" @bind-Value="newVehicle.VehicleType" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="form-check mb-2">
+                        <InputCheckbox class="form-check-input" id="isCompany" @bind-Value="newVehicle.IsOwnedByCompany" />
+                        <label class="form-check-label font-weight-bold" for="isCompany">@Names.GetName((VehicleDto x) => x.IsOwnedByCompany)</label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableFrom)</label>
+                    <InputDate class="form-control" @bind-Value="newVehicle.AvailableFrom" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableTo)</label>
+                    <InputDate class="form-control" @bind-Value="newVehicle.AvailableTo" />
+                </div>
             }
-            else
-            {
-                <span class="badge bg-secondary">Nie</span>
-            }
-        </td>
-    </TableRow>
+        </FormFields>
 
-</PageTemplate>
+        <TableHeader>
+            <th>@Names.GetName((VehicleDto x) => x.Vin)</th>
+            <th>@Names.GetName((VehicleDto x) => x.RegistrationNumber)</th>
+            <th>@Names.GetName((VehicleDto x) => x.VehicleType)</th>
+            <th>@Names.GetName((VehicleDto x) => x.AvailableFrom)</th>
+            <th>@Names.GetName((VehicleDto x) => x.AvailableTo)</th>
+            <th>@Names.GetName((VehicleDto x) => x.IsOwnedByCompany)</th>
+        </TableHeader>
+
+        <TableRow>
+            <td>@vehicle.Vin</td>
+            <td><strong>@vehicle.RegistrationNumber</strong></td>
+            <td>@vehicle.VehicleType</td>
+
+            <td>@(vehicle.AvailableFrom?.ToString("dd.MM.yyyy") ?? "-")</td>
+            <td>@(vehicle.AvailableTo?.ToString("dd.MM.yyyy") ?? "-")</td>
+
+            <td>
+                @if (vehicle.IsOwnedByCompany)
+                {
+                    <span class="badge bg-success">Tak</span>
+                }
+                else
+                {
+                    <span class="badge bg-secondary">Nie</span>
+                }
+            </td>
+        </TableRow>
+
+    </PageTemplate>
+}
 
 
 <DetailsModal IsVisible="@showDetailsModal" Title="Szczegóły Pojazdu" OnClose="() => showDetailsModal = false">
@@ -117,84 +123,87 @@
     }
 </DetailsModal>
 
+@if (userRoleLevel > 1)
+{
+    <EditModal IsVisible="@showEditModal"
+               Title="@($"Edytuj pojazd: {editingVehicle.RegistrationNumber}")"
+               OnClose="() => showEditModal = false">
 
-<EditModal IsVisible="@showEditModal" 
-           Title="@($"Edytuj pojazd: {editingVehicle.RegistrationNumber}")" 
-           OnClose="() => showEditModal = false">
-    
-    <EditForm Model="editingVehicle" OnValidSubmit="SaveEdit">
-        
-        @if (!string.IsNullOrEmpty(editErrorMessage))
-        {
-            <div class="alert alert-danger mb-3">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i> @editErrorMessage
-            </div>
-        }
+        <EditForm Model="editingVehicle" OnValidSubmit="SaveEdit">
 
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.Vin)</label>
-                <InputText class="form-control" @bind-Value="editingVehicle.Vin" />
-            </div>
-            <div class="col-md-6">
-                <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.RegistrationNumber)</label>
-                <InputText class="form-control" @bind-Value="editingVehicle.RegistrationNumber" />
-            </div>
-            <div class="col-md-6">
-                <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.VehicleType)</label>
-                <InputText class="form-control" @bind-Value="editingVehicle.VehicleType" />
-            </div>
-            <div class="col-md-6 d-flex align-items-end">
-                <div class="form-check mb-2">
-                    <InputCheckbox class="form-check-input" id="editIsCompany" @bind-Value="editingVehicle.IsOwnedByCompany" />
-                    <label class="form-check-label font-weight-bold" for="editIsCompany">@Names.GetName((VehicleDto x) => x.IsOwnedByCompany)</label>
+            @if (!string.IsNullOrEmpty(editErrorMessage))
+            {
+                <div class="alert alert-danger mb-3">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @editErrorMessage
+                </div>
+            }
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.Vin)</label>
+                    <InputText class="form-control" @bind-Value="editingVehicle.Vin" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.RegistrationNumber)</label>
+                    <InputText class="form-control" @bind-Value="editingVehicle.RegistrationNumber" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.VehicleType)</label>
+                    <InputText class="form-control" @bind-Value="editingVehicle.VehicleType" />
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                    <div class="form-check mb-2">
+                        <InputCheckbox class="form-check-input" id="editIsCompany" @bind-Value="editingVehicle.IsOwnedByCompany" />
+                        <label class="form-check-label font-weight-bold" for="editIsCompany">@Names.GetName((VehicleDto x) => x.IsOwnedByCompany)</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableFrom)</label>
+                    <InputDate class="form-control" @bind-Value="editingVehicle.AvailableFrom" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableTo)</label>
+                    <InputDate class="form-control" @bind-Value="editingVehicle.AvailableTo" />
+                </div>
+
+                <div class="col-12 text-end mt-4 pt-3 border-top">
+                    <button type="button" class="btn btn-secondary me-2" @onclick="() => showEditModal = false">
+                        Anuluj
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Zapisz zmiany
+                    </button>
                 </div>
             </div>
-            <div class="col-md-6">
-                <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableFrom)</label>
-                <InputDate class="form-control" @bind-Value="editingVehicle.AvailableFrom" />
-            </div>
-            <div class="col-md-6">
-                <label class="form-label font-weight-bold">@Names.GetName((VehicleDto x) => x.AvailableTo)</label>
-                <InputDate class="form-control" @bind-Value="editingVehicle.AvailableTo" />
-            </div>
-
-            <div class="col-12 text-end mt-4 pt-3 border-top">
-                <button type="button" class="btn btn-secondary me-2" @onclick="() => showEditModal = false">
-                    Anuluj
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-save"></i> Zapisz zmiany
-                </button>
-            </div>
-        </div>
-    </EditForm>
-</EditModal>
-
+        </EditForm>
+    </EditModal>
+}
 
 @code {
     private VehicleDto[]? vehicles;
     private VehicleDto newVehicle = new();
-    
+    private int userRoleLevel = 0; // Added variable to track user role across UI elements
+
     private bool showDetailsModal = false;
     private VehicleDto? selectedVehicle = null;
     private bool showEditModal = false;
     private VehicleDto editingVehicle = new();
-    
+
     private string? addErrorMessage;
     private string? editErrorMessage;
-    
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
             var userData = await Http.GetFromJsonAsync<UserDto>("user/login_details");
-            if (userData == null || (int)userData.RoleLevel < 2)
+            if (userData == null || (int)userData.RoleLevel < 1)
             {
                 Nav.NavigateTo("/home");
                 return;
             }
 
+            userRoleLevel = (int)userData.RoleLevel; // Save role level to check in markup
             await LoadVehicles();
         }
         catch
@@ -202,17 +211,17 @@
             Nav.NavigateTo("/");
         }
     }
-    
+
     private async Task LoadVehicles()
     {
         vehicles = await Http.GetFromJsonAsync<VehicleDto[]>("/api/vehicles/get_all");
     }
-    
+
     private async Task ShowDetails(VehicleDto vehicle)
     {
         selectedVehicle = null;
         showDetailsModal = true;
-        
+
         var requestBody = new { Id = vehicle.Id };
         var response = await Http.PostAsJsonAsync("/api/vehicles/get_detail", requestBody);
         if (response.IsSuccessStatusCode)
@@ -220,11 +229,13 @@
             selectedVehicle = await response.Content.ReadFromJsonAsync<VehicleDto>();
         }
     }
-    
+
     private async Task<bool> AddVehicle()
     {
+        if (userRoleLevel <= 1) return false; // Safety fallback guard
+
         addErrorMessage = Validation.Check(newVehicle, skipIdFields: true);
-        if (addErrorMessage != null) 
+        if (addErrorMessage != null)
         {
             StateHasChanged();
             return false;
@@ -236,6 +247,7 @@
             addErrorMessage = null;
             newVehicle = new VehicleDto();
             await LoadVehicles();
+            StateHasChanged();
             return true;
         }
         else
@@ -245,10 +257,12 @@
             return false;
         }
     }
-    
+
     private void OpenEditModal(VehicleDto vehicle)
     {
-        editingVehicle = new VehicleDto 
+        if (userRoleLevel <= 1) return; // Safety fallback guard
+
+        editingVehicle = new VehicleDto
         {
             Id = vehicle.Id,
             Vin = vehicle.Vin,
@@ -260,9 +274,11 @@
         };
         showEditModal = true;
     }
-    
+
     private async Task SaveEdit()
     {
+        if (userRoleLevel <= 1) return; // Safety fallback guard
+
         editErrorMessage = Validation.Check(editingVehicle);
         if (editErrorMessage != null) return;
 
@@ -278,16 +294,17 @@
             editErrorMessage = (await response.Content.ReadAsStringAsync()).Trim('"');
         }
     }
-    
+
     private async Task DeleteVehicle(VehicleDto vehicle)
     {
+        if (userRoleLevel <= 1) return; // Safety fallback guard
+
         var requestBody = new { Id = vehicle.Id };
-        
         var response = await Http.PostAsJsonAsync("/api/vehicles/delete", requestBody);
 
         if (response.IsSuccessStatusCode)
         {
-            await LoadVehicles(); 
+            await LoadVehicles();
         }
         else
         {

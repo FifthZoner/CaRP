@@ -270,6 +270,7 @@
                 ClerkUsername = currentUserName
             };
             await LoadWorks();
+            StateHasChanged();
             return true;
         }
         else

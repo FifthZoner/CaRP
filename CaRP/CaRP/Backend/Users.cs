@@ -31,7 +31,7 @@ public partial class Endpoints
         if (users == null)
             return Results.NotFound();
 
-        return Results.Ok(users.ConvertAll(ClerkUserToDto));
+        return Results.Ok(users.ConvertAll(ClerkUserToDto).OrderBy(x => x.Username).ToList());
     }
 
     private static async Task<IResult> UsersGetDetail(ClaimsPrincipal user, [FromBody] GetClerkDetailDto getDetailDto, [FromServices] ClerkApiClient clerkClient)
